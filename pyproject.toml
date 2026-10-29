@@ -27,6 +27,12 @@ dependencies = []
 [project.scripts]
 sable = "sable.cli:main"
 
+# The engine itself imports nothing outside the standard library; these exist so
+# CI and contributors pin one known-good toolchain rather than drifting.
+[project.optional-dependencies]
+test = ["pytest>=7.4", "pytest-cov>=4.1"]
+dev = ["ruff==0.17.3", "mypy==2.4.1", "pytest>=7.4", "pytest-cov>=4.1"]
+
 [project.urls]
 Repository = "https://github.com/MKA930/sable"
 
@@ -44,10 +50,22 @@ testpaths = ["tests"]
 addopts = "-ra --strict-markers"
 pythonpath = ["src"]
 
+[tool.coverage.run]
+branch = true
+source = ["src/sable"]
+
+[tool.coverage.report]
+precision = 1
+show_missing = true
+exclude_also = [
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]
+
 [tool.ruff]
 line-length = 100
 target-version = "py310"
-src = ["src", "tests"]
+src = ["src", "tests", "examples", "benchmarks"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM", "C4", "RET", "N", "S"]
