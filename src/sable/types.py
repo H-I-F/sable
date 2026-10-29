@@ -247,8 +247,10 @@ class EngineOptions:
             raise ValueError("max_levels must be at least 2")
         if self.level_size_multiplier < 1:
             raise ValueError("level_size_multiplier must be >= 1")
-        if not 0.0 < self.bloom_false_positive_rate < 1.0:
-            raise ValueError("bloom_false_positive_rate must be in (0, 1)")
+        if not 0.0 <= self.bloom_false_positive_rate < 1.0:
+            # Exactly 0.0 means "no filter": a caller asking for impossible
+            # perfection opts out of the space cost rather than of filtering.
+            raise ValueError("bloom_false_positive_rate must be in [0, 1)")
 
     def target_bytes_for_level(self, level: int) -> int:
         """Capacity budget of ``level`` under the leveled size multiplier."""

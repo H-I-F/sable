@@ -44,6 +44,7 @@ import zlib
 from collections.abc import Iterator
 from pathlib import Path
 
+from sable.bloom import BloomFilter
 from sable.errors import CorruptSSTableError, InvalidArgumentError
 from sable.fsutil import ATOMIC_TMP_SUFFIX, atomic_write_bytes
 from sable.types import EngineOptions, InternalEntry, InternalKey, KeyRange, OpType, SSTableMeta
@@ -106,6 +107,7 @@ class SSTableWriter:
         self._open_records: list[bytes] = []
         self._open_bytes = 0
         self._index_rows: list[tuple[int, int, int, bytes]] = []
+        self._filter_keys: list[bytes] = []
 
         self._num_entries = 0
         self._smallest_key: bytes | None = None
@@ -147,6 +149,7 @@ class SSTableWriter:
         self._open_bytes += len(record)
 
         self._num_entries += 1
+        self._filter_keys.append(entry.user_key)
         if self._smallest_key is None:
             self._smallest_key = entry.user_key
         self._largest_key = entry.user_key
@@ -182,12 +185,14 @@ class SSTableWriter:
         data_size = sum(len(block) for block in self._blocks)
         index_offset = data_offset + data_size
         index_block = self._serialise_index(data_offset)
+        filter_blob = self._serialise_filter()
         filter_offset = index_offset + len(index_block)
+        flags = FLAG_HAS_FILTER if filter_blob else 0
 
         header = HEADER_STRUCT.pack(
             FILE_MAGIC,
             FILE_VERSION,
-            0,
+            flags,
             self._num_entries,
             len(self._blocks),
             max(self._min_sequence, 0),
@@ -197,13 +202,13 @@ class SSTableWriter:
             index_offset,
             len(index_block),
             filter_offset,
-            0,
+            len(filter_blob),
             len(smallest),
             len(largest),
         )
         head = header + smallest + largest
         footer = FOOTER_STRUCT.pack(FILE_MAGIC, zlib.crc32(head) & 0xFFFFFFFF, 0)
-        payload = head + b"".join(self._blocks) + index_block + footer
+        payload = head + b"".join(self._blocks) + index_block + filter_blob + footer
 
         written = atomic_write_bytes(self._target, payload)
         self._finished = True
@@ -241,6 +246,17 @@ class SSTableWriter:
         klen, _vlen, _op, _seq = _RECORD_STRUCT.unpack_from(block, 0)
         return block[RECORD_HEADER_SIZE : RECORD_HEADER_SIZE + klen]
 
+    def _serialise_filter(self) -> bytes:
+        """Build the Bloom block, or an empty image when filtering is disabled."""
+        if not self._filter_keys or self._options.bloom_false_positive_rate <= 0.0:
+            return b""
+        filter = BloomFilter.with_capacity(
+            len(self._filter_keys), self._options.bloom_false_positive_rate
+        )
+        for key in self._filter_keys:
+            filter.add(key)
+        return filter.to_bytes()
+
     def _serialise_index(self, data_offset: int) -> bytes:
         """Serialise the sparse index, rebasing relative offsets to absolute ones."""
         rows: list[bytes] = []
@@ -262,6 +278,12 @@ class SSTableReader:
         self._closed = False
         self._data_block_reads = 0
         self._index_cache: list[tuple[int, int, int, bytes]] | None = None
+        self._bloom: BloomFilter | None = None
+        self._bloom_rejections = 0
+        self._filter_loaded = False
+        self._header_flags = 0
+        self._header_filter_offset = 0
+        self._header_filter_size = 0
         self._meta = self._load_header()
 
     @classmethod
@@ -291,8 +313,37 @@ class SSTableReader:
         return self._data_block_reads
 
     @property
+    def bloom_rejections(self) -> int:
+        """Reads pruned without touching any data block."""
+        return self._bloom_rejections
+
+    @property
+    def has_bloom_filter(self) -> bool:
+        """True once a filter has been loaded; triggers the lazy read if needed."""
+        self._ensure_filter()
+        return self._bloom is not None
+
+    @property
     def closed(self) -> bool:
         return self._closed
+
+    def maybe_contains_key(self, user_key: bytes) -> bool:
+        """Probabilistic membership test; a ``False`` result is always certain.
+
+        Args:
+            user_key: Key to test.
+
+        Returns:
+            ``False`` guarantees absence. ``True`` means the key may be present
+            and still requires reading the containing block.
+        """
+        self._ensure_filter()
+        if self._bloom is None:
+            return True
+        present = self._bloom.may_contain(user_key)
+        if not present:
+            self._bloom_rejections += 1
+        return present
 
     def close(self) -> None:
         """Release the descriptor. Idempotent."""
@@ -316,6 +367,8 @@ class SSTableReader:
             key), or ``None`` when the file cannot contain it.
         """
         if not self.covers_key(user_key):
+            return None
+        if not self.maybe_contains_key(user_key):
             return None
         block_index = self._locate_block(user_key)
         if block_index < 0:
@@ -372,6 +425,9 @@ class SSTableReader:
         smallest_len, largest_len = fields[13], fields[14]
         spans = self._read_at(HEADER_SIZE, smallest_len + largest_len)
         head = head_prefix + spans
+        self._header_flags = fields[2]
+        self._header_filter_offset = fields[11]
+        self._header_filter_size = fields[12]
         footer = self._read_at(size - FOOTER_SIZE, FOOTER_SIZE)
         footer_magic, header_crc, _reserved = FOOTER_STRUCT.unpack(footer)
         if footer_magic != FILE_MAGIC or header_crc != zlib.crc32(head) & 0xFFFFFFFF:
@@ -404,6 +460,20 @@ class SSTableReader:
             rows.append((offset, size, crc, first_key))
             position = key_start + key_len
         return rows
+
+    def _ensure_filter(self) -> None:
+        """Load the Bloom block lazily; it is small and shared by every probe."""
+        if self._filter_loaded:
+            return
+        self._filter_loaded = True
+        if not self._header_flags & FLAG_HAS_FILTER:
+            return
+        size = self._path.stat().st_size
+        start = self._header_filter_offset
+        end = min(size - FOOTER_SIZE, start + self._header_filter_size)
+        if start <= 0 or end <= start or start >= size:
+            return
+        self._bloom = BloomFilter.from_bytes(self._read_at(start, end - start))
 
     def _ensure_index(self) -> list[tuple[int, int, int, bytes]]:
         """Load and memoise the index block; it is immutable once published."""
