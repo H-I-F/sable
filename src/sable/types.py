@@ -26,6 +26,7 @@ __all__ = [
     "OpType",
     "InternalKey",
     "InternalEntry",
+    "SSTableMeta",
     "KeyRange",
     "ReadOptions",
     "WriteOptions",
@@ -159,6 +160,53 @@ class KeyRange:
             if not self.end_exclusive and min_key > self.end:
                 return False
         return True
+
+
+@dataclass(slots=True)
+class SSTableMeta:
+    """Identity and span of one immutable on-disk table.
+
+    Attributes:
+        file_id: Monotonic identifier; also the file name (``%06d.sst``).
+        level: Level owning this file. Level 0 files may overlap, levels >= 1
+            do not, which is what lets higher levels be binary-searched.
+        refs: Number of live readers pinning this file. A compaction may drop it
+            from the view immediately but must not unlink it until ``refs``
+            reaches zero; that is the entire snapshot-safety mechanism.
+    """
+
+    file_id: int
+    level: int
+    file_size: int = 0
+    num_entries: int = 0
+    num_blocks: int = 0
+    smallest_key: bytes = b""
+    largest_key: bytes = b""
+    min_sequence: int = 0
+    max_sequence: int = 0
+    refs: int = 0
+
+    @property
+    def file_name(self) -> str:
+        return f"{self.file_id:06d}.sst"
+
+    def pin(self) -> SSTableMeta:
+        """Increment the reader count and return self for chaining."""
+        self.refs += 1
+        return self
+
+    def unpin(self) -> int:
+        """Decrement the reader count and return the residual."""
+        if self.refs <= 0:
+            raise ValueError(f"unpin called on unpinned file {self.file_name}")
+        self.refs -= 1
+        return self.refs
+
+    def covers(self, user_key: bytes) -> bool:
+        """True when ``user_key`` lies inside this file's key span."""
+        if self.smallest_key and user_key < self.smallest_key:
+            return False
+        return not (self.largest_key and user_key > self.largest_key)
 
 
 @dataclass(frozen=True, slots=True)
