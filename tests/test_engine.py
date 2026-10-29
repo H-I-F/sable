@@ -8,6 +8,7 @@ durable, and everything acknowledged must reappear.
 from __future__ import annotations
 
 import os
+from collections.abc import Iterator as IteratorABC
 from pathlib import Path
 
 import pytest
@@ -320,6 +321,114 @@ def test_torn_wal_tail_is_repaired_on_open(tmp_path: Path) -> None:
     assert final.get(b"complete") == b"v1"
     assert final.get(b"after") == b"v3"
     final.close()
+
+
+def test_scan_merges_levels_and_filters_tombstones(tmp_path: Path) -> None:
+    """Mandated case: one ordered stream across every tier, tombstones consumed."""
+    engine = small_engine(tmp_path)
+    for index in range(30):
+        engine.put(key_for(index), b"gen0")
+
+    engine.flush()
+    promote_to_level(engine, 1)          # elder generation now lives below L0
+
+    for index in range(0, 30, 2):        # overwrite half of them
+        engine.put(key_for(index), b"gen1")
+    engine.put(b"m-after", b"newly-inserted")
+    engine.flush()
+
+    engine.delete(key_for(4))            # tombstone over a twice-written key
+    engine.delete(key_for(21))           # tombstone over a single-write key
+    engine.flush()
+
+    engine.put(key_for(0), b"gen2")      # newest version never leaves the memtable
+    engine.put(b"m-latest", b"memtable-only")
+
+    observed = list(engine.scan())
+
+    expected_keys = [key_for(i) for i in range(30) if i not in (4, 21)]
+    expected_keys += [b"m-after", b"m-latest"]
+    expected_keys.sort()
+
+    assert [key for key, _ in observed] == expected_keys
+    assert dict(observed)[key_for(0)] == b"gen2"
+    assert dict(observed)[key_for(2)] == b"gen1"
+    assert dict(observed)[key_for(1)] == b"gen0"
+    assert key_for(4) not in dict(observed), "tombstoned keys must not appear at all"
+    assert key_for(21) not in dict(observed)
+    engine.close()
+
+
+def test_scan_returns_generator_not_materialised_list(tmp_path: Path) -> None:
+    engine = small_engine(tmp_path)
+    for index in range(20):
+        engine.put(key_for(index), b"v")
+
+    stream = engine.scan()
+
+    assert isinstance(stream, IteratorABC)
+    assert len(list(stream)) == 20
+    engine.close()
+
+
+def test_scan_honours_window_bounds(tmp_path: Path) -> None:
+    engine = small_engine(tmp_path)
+    for index in range(20):
+        engine.put(key_for(index), b"v")
+    engine.flush()
+
+    assert [k for k, _ in engine.scan(key_for(5), key_for(9))] == [
+        key_for(i) for i in range(5, 9)
+    ]
+    assert [k for k, _ in engine.scan(end=key_for(3))] == [key_for(i) for i in range(3)]
+    assert len([k for k, _ in engine.scan(start=key_for(18))]) == 2
+
+    inclusive = list(engine.scan(key_for(0), key_for(2), end_exclusive=False))
+    assert [k for k, _ in inclusive] == [key_for(i) for i in range(3)]
+
+    exclusive_start = list(engine.scan(key_for(0), start_inclusive=False))
+    assert exclusive_start[0][0] == key_for(1)
+    engine.close()
+
+
+def test_scan_limit_stops_after_requested_pairs(tmp_path: Path) -> None:
+    engine = small_engine(tmp_path)
+    for index in range(50):
+        engine.put(key_for(index), b"v")
+
+    assert len(list(engine.scan(limit=7))) == 7
+    engine.close()
+
+
+def test_scan_is_consistent_with_point_reads(tmp_path: Path) -> None:
+    engine = small_engine(tmp_path)
+    for index in range(40):
+        engine.put(key_for(index), f"value-{index}".encode())
+        if index % 7 == 0:
+            engine.flush()
+    engine.delete(key_for(13))
+
+    for key, value in engine.scan():
+        assert engine.get(key) == value
+    assert engine.get(key_for(13)) is None
+    engine.close()
+
+
+def test_scan_rejects_malformed_arguments(tmp_path: Path) -> None:
+    engine = small_engine(tmp_path)
+
+    with pytest.raises(InvalidArgumentError, match="scan bounds must be bytes"):
+        list(engine.scan(start=" textual "))
+    with pytest.raises(InvalidArgumentError, match="limit must be non-negative"):
+        list(engine.scan(limit=-1))
+    engine.close()
+
+
+def test_scan_over_empty_store_yields_nothing(tmp_path: Path) -> None:
+    engine = small_engine(tmp_path)
+
+    assert list(engine.scan()) == []
+    engine.close()
 
 
 def test_internal_lookup_reveals_tombstone_not_absence(tmp_path: Path) -> None:

@@ -390,15 +390,28 @@ class SSTableReader:
             return
         start = 0
         if key_range.start is not None:
-            start = self._locate_block(key_range.start)
-            if start < 0:
-                start = 0
-        for block_index in range(start, self._meta.num_blocks):
+            start = max(self._locate_block(key_range.start), 0)
+
+        rows = self._ensure_index()
+        for block_index in range(start, len(rows)):
+            # Blocks are ordered by first key, so once one starts past the
+            # window every later block does too - no further IO is justified.
+            if not self._block_can_hold(rows[block_index][3], key_range):
+                return
             for entry in self._iter_records(block_index):
                 if key_range.contains(entry.user_key):
                     yield entry
                 elif key_range.end is not None and entry.user_key >= key_range.end:
                     return
+
+    @staticmethod
+    def _block_can_hold(first_key: bytes, key_range: KeyRange) -> bool:
+        """True when any key at or after ``first_key`` could still be in range."""
+        if key_range.end is None:
+            return True
+        if key_range.end_exclusive:
+            return first_key < key_range.end
+        return first_key <= key_range.end
 
     def iter_all(self) -> Iterator[InternalEntry]:
         """Yield every record in the file."""
