@@ -26,6 +26,7 @@ import json
 import struct
 import threading
 import zlib
+from collections.abc import Callable
 from pathlib import Path
 
 from sable.errors import (
@@ -44,7 +45,9 @@ from sable.types import (
     InternalEntry,
     ReadOptions,
     SSTableMeta,
+    WriteOptions,
 )
+from sable.wal import WriteAheadLog
 
 __all__ = ["Engine", "HOME_FILE_LAYOUT"]
 
@@ -54,6 +57,8 @@ _MANIFEST_HEADER = struct.Struct("<4sI")
 
 CURRENT_FILE = "CURRENT"
 MANIFEST_PREFIX = "MANIFEST-"
+WAL_PREFIX = "wal-"
+WAL_SUFFIX = ".log"
 _EMPTY_SEQUENCE = -1
 
 HOME_FILE_LAYOUT = (CURRENT_FILE, MANIFEST_PREFIX)
@@ -74,6 +79,8 @@ class Engine:
         self._last_sequence = _EMPTY_SEQUENCE
         self._stats = EngineStats()
         self._closed = False
+        self._wal: WriteAheadLog | None = None
+        self._wal_generation = 0
 
     # -- lifecycle ---------------------------------------------------------
 
@@ -106,6 +113,9 @@ class Engine:
             if self._closed:
                 return
             self._closed = True
+            if self._wal is not None:
+                self._wal.close()
+                self._wal = None
             for reader in self._readers.values():
                 reader.close()
             self._readers.clear()
@@ -184,28 +194,64 @@ class Engine:
                         return hit
         return None
 
-    # -- writes (memtable-resident until PR 06 adds the WAL) ---------------
+    # -- writes ------------------------------------------------------------
 
-    def put(self, user_key: bytes, value: bytes) -> None:
-        """Stage a live value in the active memtable.
+    def put(
+        self, user_key: bytes, value: bytes, write_options: WriteOptions | None = None
+    ) -> None:
+        """Persist a live value.
+
+        The write follows append-before-apply: the frame is allocated a sequence
+        number, reaches stable storage in the WAL, and only then becomes visible
+        in the memtable. A crash between the two loses the write but never makes
+        it visible-then-lost, which is what lets "acknowledged" mean "durable".
 
         Args:
             user_key: Key to write.
             value: Payload; may be empty, which is distinct from absence.
+            write_options: Per-call override for fsync behaviour.
+
+        Raises:
+            InvalidArgumentError: Key or value is malformed.
         """
         self._require_live(user_key)
         if not isinstance(value, (bytes, bytearray)):
             raise InvalidArgumentError("value must be bytes")
+        self._stage_mutation(
+            lambda sequence: InternalEntry.put(user_key, sequence, bytes(value)),
+            write_options,
+        )
         with self._lock:
-            self._active.put(user_key, self._allocate_sequence(), bytes(value))
             self._stats.puts += 1
 
-    def delete(self, user_key: bytes) -> None:
-        """Stage a tombstone in the active memtable."""
+    def delete(self, user_key: bytes, write_options: WriteOptions | None = None) -> None:
+        """Persist a tombstone, following the same append-before-apply order."""
         self._require_live(user_key)
+        self._stage_mutation(
+            lambda sequence: InternalEntry.delete(user_key, sequence), write_options
+        )
         with self._lock:
-            self._active.delete(user_key, self._allocate_sequence())
             self._stats.deletes += 1
+
+    def _stage_mutation(
+        self,
+        factory: Callable[[int], InternalEntry],
+        write_options: WriteOptions | None,
+    ) -> None:
+        """Sequence -> durable WAL frame -> visible memtable entry."""
+        sync = None if write_options is None else write_options.sync
+        with self._lock:
+            self._require_open()
+            entry = factory(self._allocate_sequence())
+            self._append_frame(entry, sync=sync)
+            self._active.add(entry)
+            self._maybe_schedule_flush()
+
+    def _append_frame(self, entry: InternalEntry, *, sync: bool | None) -> None:
+        if self._wal is None:
+            self._wal = self._open_wal(self._wal_generation or 1)
+        self._wal.append(entry, sync=sync)
+        self._stats.wal_bytes_written = self._wal.bytes_appended
 
     def flush(self) -> None:
         """Freeze the active memtable and publish it as a new L0 table.
@@ -223,12 +269,81 @@ class Engine:
             self._immutable.insert(0, frozen)
             self._active = MemTable()
             self._seal_one_immutable()
+            # Only now that the table is visible in the manifest is it safe to
+            # retire the log that carried those same entries.
+            self._rotate_wal()
 
     # -- internals ---------------------------------------------------------
 
-    def _allocate_sequence(self) -> int:
-        self._last_sequence += 1
-        return self._last_sequence
+    def _maybe_schedule_flush(self) -> None:
+        """Freeze proactively once the memtable crosses its budget.
+
+        Flushing inline (rather than on a background thread) keeps failure modes
+        observable: a full\filled threshold either publishes successfully or the
+        write that triggered it raises. There is no hidden queue to lose.
+        """
+        if self._active.approximate_bytes < self._options.memtable_bytes_threshold:
+            return
+        table = self._active
+        table.freeze()
+        self._immutable.insert(0, table)
+        self._active = MemTable()
+        self._seal_one_immutable()
+        self._rotate_wal()
+
+    # -- write-ahead log ---------------------------------------------------
+
+    def _wal_path(self, generation: int) -> Path:
+        return self._home / f"{WAL_PREFIX}{generation:06d}{WAL_SUFFIX}"
+
+    def _open_wal(self, generation: int) -> WriteAheadLog:
+        log = WriteAheadLog.open(
+            self._wal_path(generation), sync=self._options.default_write_sync
+        )
+        self._wal_generation = generation
+        return log
+
+    def _recover_wal(self) -> None:
+        """Replay every surviving segment and reopen the newest for appending."""
+        segments = sorted(
+            self._home.glob(f"{WAL_PREFIX}*{WAL_SUFFIX}"),
+            key=lambda path: path.stat().st_size,
+        )
+        segments.sort(key=lambda path: path.name)
+
+        for segment in segments:
+            result = WriteAheadLog.recover(segment)
+            if result.torn_tail:
+                WriteAheadLog.truncate_torn_tail(segment, result.valid_bytes)
+            for entry in result.entries:
+                self._observe_sequence(entry.sequence)
+                self._active.add(entry)
+
+        generation = self._parse_generation(segments[-1]) if segments else 1
+        self._wal = self._open_wal(generation)
+        self._discard_wals(keep=self._wal.path)
+
+    def _parse_generation(self, segment: Path) -> int:
+        digits = segment.name[len(WAL_PREFIX) : -len(WAL_SUFFIX)]
+        return int(digits)
+
+    def _rotate_wal(self) -> None:
+        """Open the next generation, then retire everything it supersedes."""
+        superseded = self._wal
+        self._wal = self._open_wal(self._wal_generation + 1)
+        if superseded is not None:
+            superseded.close()
+        self._discard_wals(keep=self._wal.path)
+
+    def _discard_wals(self, keep: Path) -> None:
+        for segment in self._home.glob(f"{WAL_PREFIX}*{WAL_SUFFIX}"):
+            if segment.name == keep.name:
+                continue
+            segment.unlink(missing_ok=True)
+        self._seal_home_directory()
+
+    def _observe_sequence(self, sequence: int) -> None:
+        self._last_sequence = max(self._last_sequence, sequence)
 
     def _require_live(self, user_key: bytes) -> None:
         self._require_open()
@@ -240,6 +355,10 @@ class Engine:
     def _require_open(self) -> None:
         if self._closed:
             raise ClosedEngineError("engine is closed")
+
+    def _allocate_sequence(self) -> int:
+        self._last_sequence += 1
+        return self._last_sequence
 
     def _seal_one_immutable(self) -> None:
         """Publish the newest immutable table as one L0 file."""
@@ -286,6 +405,7 @@ class Engine:
         manifest = self._read_current()
         if manifest is not None and manifest.exists():
             self._load_manifest(manifest)
+        self._recover_wal()
 
     def _manifest_path(self) -> Path:
         manifest = self._read_current()
