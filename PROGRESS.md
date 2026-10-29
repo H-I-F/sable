@@ -18,4 +18,4 @@ PR-scoped acceptance command passes locally **and** the PR is merged.
 - [x] PR 13: 变更日志与演示用例 (examples/crash_demo.py)
 - [x] PR 14: GitHub Actions 生产级 CI 检查管线
 - [x] PR 15: 容器化多阶段 Dockerfile 与双语硬核架构 README
-- [ ] PR 16: 基准测试套件与最终性能数据归档
+- [x] PR 16: 基准测试套件与最终性能数据归档
