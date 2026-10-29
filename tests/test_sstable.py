@@ -29,11 +29,16 @@ from sable.types import EngineOptions, InternalEntry, KeyRange, OpType
 
 
 def build_table(
-    path: Path, count: int = 40, *, block_size: int = 64, file_id: int = 1, level: int = 0
+    path: Path,
+    count: int = 40,
+    *,
+    block_size: int = 64,
+    file_id: int = 1,
+    level: int = 0,
+    fpr: float = 0.0001,
 ) -> SSTableWriter:
-    writer = SSTableWriter(
-        path, EngineOptions(block_size_bytes=block_size), file_id=file_id, level=level
-    )
+    options = EngineOptions(block_size_bytes=block_size, bloom_false_positive_rate=fpr)
+    writer = SSTableWriter(path, options, file_id=file_id, level=level)
     for item in sequential_puts(count):
         writer.add_entry(item)
     return writer
@@ -253,6 +258,61 @@ def test_range_iteration_honours_bounds(tmp_path: Path) -> None:
 
         unbounded = list(reader.iter_slice(KeyRange()))
         assert len(unbounded) == 30
+
+
+def test_bloom_rejects_absent_key_without_scan(tmp_path: Path) -> None:
+    """Mandated case: a pruned key costs zero data-block reads."""
+    path = tmp_path / "000001.sst"
+    count = 200
+    build_table(path, count=count).finish()
+
+    with SSTableReader.open(path) as reader:
+        assert reader.has_bloom_filter, "the writer must publish a filter by default"
+
+        # Each probe sits strictly between two stored keys, so the cheaper span
+        # check cannot prune it and the filter is genuinely consulted. The last
+        # stored key is excluded because appending past it would exceed the span.
+        probes = [key_for(index) + b"X" for index in range(count - 1)]
+        assert all(reader.covers_key(probe) for probe in probes)
+
+        before = reader.data_block_reads
+        hits = [probe for probe in probes if reader.get_entry(probe) is not None]
+        cost = reader.data_block_reads - before
+
+        assert hits == [], f"absent keys resolved to data: {hits[:3]}"
+        assert cost == 0, f"pruned reads touched {cost} data blocks instead of zero"
+        assert reader.bloom_rejections == len(probes)
+
+        # A present key still resolves; filters must not produce false negatives.
+        assert reader.get_entry(key_for(120)) is not None
+        assert reader.data_block_reads > before
+
+
+def test_bloom_has_no_false_negatives_over_large_keyspace(tmp_path: Path) -> None:
+    path = tmp_path / "000001.sst"
+    count = 500
+    build_table(path, count=count).finish()
+
+    with SSTableReader.open(path) as reader:
+        for index in range(count):
+            assert reader.maybe_contains_key(key_for(index))
+
+
+def test_bloom_disabled_when_rate_is_zero(tmp_path: Path) -> None:
+    path = tmp_path / "000001.sst"
+    writer = SSTableWriter(
+        path, EngineOptions(block_size_bytes=64, bloom_false_positive_rate=0.0)
+    )
+    for item in sequential_puts(30):
+        writer.add_entry(item)
+    writer.finish()
+
+    with SSTableReader.open(path) as reader:
+        assert reader.has_bloom_filter is False
+        assert reader.maybe_contains_key(b"anything") is True
+        # Without a filter the key must still be found by reading a block.
+        assert reader.get_entry(key_for(5)) is not None
+        assert reader.data_block_reads == 1
 
 
 def test_metadata_reports_sequence_span(tmp_path: Path) -> None:
