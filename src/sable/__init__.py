@@ -19,6 +19,7 @@ embedding stays cheap:
 
 from __future__ import annotations
 
+from sable.engine import Engine
 from sable.errors import (
     ChecksumMismatchError,
     ClosedEngineError,
@@ -50,6 +51,7 @@ __all__ = [
     "CorruptSSTableError",
     "CorruptWALError",
     "CorruptionError",
+    "Engine",
     "EngineOptions",
     "EngineStats",
     "InternalEntry",
