@@ -218,3 +218,18 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# ---------------------------------------------------------------------------
+# sable engine artifacts
+# ---------------------------------------------------------------------------
+# Runtime data directories produced locally, by examples, or by benchmarks.
+data/
+tmp-data/
+bench-data/
+examples/data/
+
+# SSTable / WAL / MANIFEST payloads are binary; never desirable in git history.
+manifest-*lock*
+*.wal
+*.sst.tmp
+manifest.tmp
