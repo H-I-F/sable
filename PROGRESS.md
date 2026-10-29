@@ -13,7 +13,7 @@ PR-scoped acceptance command passes locally **and** the PR is merged.
 - [x] PR 08: SSTable Bloom Filter 块与快速剪枝
 - [x] PR 09: 稀疏索引驱动的 Range Scan 与 Multi-Level K-Way Merge
 - [x] PR 10: Compaction 机制与 Tombstone 物理回收
-- [ ] PR 11: 引用计数保护的快照并发安全 (threading.Barrier)
+- [x] PR 11: 引用计数保护的快照并发安全 (threading.Barrier)
 - [ ] PR 12: SIGKILL 进程崩溃恢复矩阵测试
 - [ ] PR 13: 变更日志与演示用例 (examples/crash_demo.py)
 - [ ] PR 14: GitHub Actions 生产级 CI 检查管线
