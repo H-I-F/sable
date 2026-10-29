@@ -15,7 +15,7 @@ PR-scoped acceptance command passes locally **and** the PR is merged.
 - [x] PR 10: Compaction 机制与 Tombstone 物理回收
 - [x] PR 11: 引用计数保护的快照并发安全 (threading.Barrier)
 - [x] PR 12: SIGKILL 进程崩溃恢复矩阵测试
-- [ ] PR 13: 变更日志与演示用例 (examples/crash_demo.py)
+- [x] PR 13: 变更日志与演示用例 (examples/crash_demo.py)
 - [ ] PR 14: GitHub Actions 生产级 CI 检查管线
 - [ ] PR 15: 容器化多阶段 Dockerfile 与双语硬核架构 README
 - [ ] PR 16: 基准测试套件与最终性能数据归档
