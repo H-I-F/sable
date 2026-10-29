@@ -3,7 +3,7 @@
 Single-step file-driven state machine. Every box is ticked only after the
 PR-scoped acceptance command passes locally **and** the PR is merged.
 
-- [ ] PR 01: 包骨架 + 领域类型与错误契约
+- [x] PR 01: 包骨架 + 领域类型与错误契约
 - [ ] PR 02: WAL 帧格式、CRC32 校验与 torn-tail 截断恢复
 - [ ] PR 03: MemTable 排序与 Tombstone 遮蔽语义
 - [ ] PR 04: SSTable 二进制格式与原子落盘

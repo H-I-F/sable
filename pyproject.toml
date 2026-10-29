@@ -50,6 +50,11 @@ src = ["src", "tests"]
 select = ["E", "F", "W", "I", "UP", "B", "SIM", "C4", "RET", "N", "S"]
 ignore = ["B008"]
 
+[tool.ruff.lint.per-file-ignores]
+# pytest suites express expectations through bare asserts by design.
+"tests/*" = ["S101"]
+"benchmarks/*" = ["S101"]
+
 [tool.mypy]
 python_version = "3.10"
 warn_return_any = true
