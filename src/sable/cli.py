@@ -145,6 +145,37 @@ def command_stats(arguments: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def command_scan(arguments: argparse.Namespace) -> int:
+    """Walk ``[start, end)`` in order and emit one ``key<TAB>value`` line each.
+
+    Deleted keys are *absent* rather than emitted with a sentinel: the merge
+    consumed their tombstone, so there is nothing left to report.
+    """
+    engine = open_engine(arguments.home)
+    try:
+        start = _optional_bytes(arguments.start, arguments.hex)
+        end = _optional_bytes(arguments.end, arguments.hex)
+        pairs = list(engine.scan(start, end, end_exclusive=not arguments.end_inclusive,
+                                 limit=arguments.limit))
+    finally:
+        engine.close()
+    for key, value in pairs:
+        _emit(_render(key, arguments.hex) + b"\t" + _render(value, arguments.hex) + b"\n")
+    return EXIT_OK
+
+
+def _optional_bytes(raw: str | None, hex_mode: bool) -> bytes | None:
+    """Decode an optional CLI bound, preserving "unbounded" as ``None``."""
+    if raw is None:
+        return None
+    return key_bytes(raw, hex_mode=hex_mode)
+
+
+def _render(payload: bytes, hex_mode: bool) -> bytes:
+    """Render one side of a scan line hexadecimally only when it came in that way."""
+    return payload.hex().encode("ascii") if hex_mode else payload
+
+
 def _read_amplification(levels: Sequence[Sequence[object]]) -> int:
     if not levels:
         return 0
@@ -201,6 +232,15 @@ def build_parser() -> argparse.ArgumentParser:
     delete = subparsers.add_parser("delete", parents=[key_help], help="tombstone a key")
     delete.add_argument("key")
     delete.set_defaults(handler=command_delete)
+
+    scan = subparsers.add_parser("scan", parents=[key_help], help="walk a key range in order")
+    scan.add_argument("start", nargs="?", help="lower bound; unbounded when omitted")
+    scan.add_argument("end", nargs="?", help="upper bound, excluded by default")
+    scan.add_argument("--limit", type=int, default=None, help="stop after this many pairs")
+    scan.add_argument(
+        "--end-inclusive", action="store_true", help="include END rather than stopping before it"
+    )
+    scan.set_defaults(handler=command_scan)
 
     stats = subparsers.add_parser("stats", help="report tree shape and counters")
     stats.add_argument("--json", action="store_true", help="emit machine-readable output")
