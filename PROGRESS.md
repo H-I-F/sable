@@ -7,7 +7,7 @@ PR-scoped acceptance command passes locally **and** the PR is merged.
 - [x] PR 02: WAL 帧格式、CRC32 校验与 torn-tail 截断恢复
 - [x] PR 03: MemTable 排序与 Tombstone 遮蔽语义
 - [ ] PR 04: SSTable 二进制格式与原子落盘
-- [ ] PR 05: 读路径：MemTable → 不可变 MemTable → L0...Ln
+- [x] PR 05: 读路径：MemTable → 不可变 MemTable → L0...Ln
 - [ ] PR 06: 写路径：append-before-apply 与刷盘持久化
 - [ ] PR 07: 生产级 CLI 交互入口 (sable put/get/stats)
 - [ ] PR 08: SSTable Bloom Filter 块与快速剪枝
