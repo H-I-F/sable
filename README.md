@@ -9,10 +9,11 @@ compaction.
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Dependencies](https://img.shields.io/badge/runtime%20deps-0-brightgreen.svg)](pyproject.toml)
 
-`sable` is a complete single-node storage engine in roughly 1,600 lines of pure
-Python: a chronological write-ahead log, a skip-list memtable, leveled immutable
-SSTables with per-block checksums and Bloom filters, a multi-level merge read
-path, and a compactor that reclaims versions nobody can read any more.
+`sable` is a complete single-node storage engine in **1,826 lines of pure Python
+logic** (3,416 lines counting the docstrings that explain every layout): a
+chronological write-ahead log, a skip-list memtable, leveled immutable SSTables
+with per-block checksums and Bloom filters, a multi-level merge read path, and a
+compactor that reclaims versions nobody can read any more.
 
 ```console
 $ sable put hello world

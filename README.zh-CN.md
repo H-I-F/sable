@@ -8,9 +8,10 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Dependencies](https://img.shields.io/badge/runtime%20deps-0-brightgreen.svg)](pyproject.toml)
 
-`sable` 用约 1600 行纯 Python 实现了一个完整的单机存储引擎：顺序写的预写日志、
-跳表 MemTable、带块级校验和与 Bloom Filter 的分层不可变 SSTable、跨层归并读路径，
-以及一个回收“无人可读版本”的 Compactor。
+`sable` 用 **1,826 行纯 Python 逻辑**（含解释每种布局的 docstring 共 3,416 行）
+实现了一个完整的单机存储引擎：顺序写的预写日志、跳表 MemTable、带块级校验和与
+Bloom Filter 的分层不可变 SSTable、跨层归并读路径，以及一个回收“无人可读版本”的
+Compactor。
 
 ```console
 $ sable put hello world
