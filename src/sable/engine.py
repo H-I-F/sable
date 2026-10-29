@@ -22,11 +22,12 @@ a log whose meaning depends on every frame preceding it.
 
 from __future__ import annotations
 
+import heapq
 import json
 import struct
 import threading
 import zlib
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from pathlib import Path
 
 from sable.errors import (
@@ -43,6 +44,7 @@ from sable.types import (
     EngineOptions,
     EngineStats,
     InternalEntry,
+    KeyRange,
     ReadOptions,
     SSTableMeta,
     WriteOptions,
@@ -170,6 +172,74 @@ class Engine:
         with self._lock:
             self._stats.get_hits += 1
         return entry.value
+
+    def scan(
+        self,
+        start: bytes | None = None,
+        end: bytes | None = None,
+        *,
+        start_inclusive: bool = True,
+        end_exclusive: bool = True,
+        limit: int | None = None,
+    ) -> Iterator[tuple[bytes, bytes]]:
+        """Walk every visible key in ``[start, end)`` in ascending order.
+
+        Args:
+            start: Lower bound; unbounded when ``None``.
+            end: Upper bound; unbounded when ``None``.
+            start_inclusive: Whether ``start`` itself is included.
+            end_exclusive: Whether ``end`` is excluded.
+            limit: Stop after this many visible pairs.
+
+        Yields:
+            ``(key, value)`` pairs. Deleted keys are absent from the output, not
+            yielded with a sentinel: the tombstone was consumed during the merge.
+
+        Raises:
+            InvalidArgumentError: A bound is not bytes, or ``limit`` is negative.
+        """
+        self._require_open()
+        for bound in (start, end):
+            if bound is not None and not isinstance(bound, (bytes, bytearray)):
+                raise InvalidArgumentError("scan bounds must be bytes")
+        if limit is not None and limit < 0:
+            raise InvalidArgumentError("limit must be non-negative")
+
+        key_range = KeyRange(start, end, start_inclusive, end_exclusive)
+        with self._lock:
+            self._stats.scans += 1
+
+        emitted = 0
+        for entry in self._versioned_scan(key_range):
+            if entry.is_tombstone:
+                continue
+            yield entry.user_key, entry.value
+            emitted += 1
+            if limit is not None and emitted >= limit:
+                return
+
+    def _versioned_scan(self, key_range: KeyRange) -> Iterator[InternalEntry]:
+        """Merge every source into one ordered stream of winning versions.
+
+        Sources are the active memtable, each immutable memtable, and every
+        SSTable at every level. ``heapq.merge`` over ``InternalEntry.sort_key``
+        produces the same (key asc, sequence desc) order each source already
+        guarantees internally, so the newest version of a key necessarily arrives
+        first and elder versions are dropped by identity comparison alone.
+        """
+        with self._lock:
+            tables = [self._active, *self._immutable]
+            readers = [self._reader_for(meta) for level in self._levels for meta in level]
+
+        streams: list[Iterator[InternalEntry]] = [table.iter_range(key_range) for table in tables]
+        streams.extend(reader.iter_slice(key_range) for reader in readers)
+
+        previous_key: bytes | None = None
+        for entry in heapq.merge(*streams, key=lambda item: item.sort_key):
+            if previous_key is not None and entry.user_key == previous_key:
+                continue
+            previous_key = entry.user_key
+            yield entry
 
     def _lookup_entry(self, user_key: bytes) -> InternalEntry | None:
         """Return the first version encountered, tombstones included."""

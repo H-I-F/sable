@@ -6,12 +6,12 @@ PR-scoped acceptance command passes locally **and** the PR is merged.
 - [x] PR 01: 包骨架 + 领域类型与错误契约
 - [x] PR 02: WAL 帧格式、CRC32 校验与 torn-tail 截断恢复
 - [x] PR 03: MemTable 排序与 Tombstone 遮蔽语义
-- [ ] PR 04: SSTable 二进制格式与原子落盘
+- [x] PR 04: SSTable 二进制格式与原子落盘
 - [x] PR 05: 读路径：MemTable → 不可变 MemTable → L0...Ln
 - [x] PR 06: 写路径：append-before-apply 与刷盘持久化
 - [x] PR 07: 生产级 CLI 交互入口 (sable put/get/stats)
 - [x] PR 08: SSTable Bloom Filter 块与快速剪枝
-- [ ] PR 09: 稀疏索引驱动的 Range Scan 与 Multi-Level K-Way Merge
+- [x] PR 09: 稀疏索引驱动的 Range Scan 与 Multi-Level K-Way Merge
 - [ ] PR 10: Compaction 机制与 Tombstone 物理回收
 - [ ] PR 11: 引用计数保护的快照并发安全 (threading.Barrier)
 - [ ] PR 12: SIGKILL 进程崩溃恢复矩阵测试
