@@ -356,15 +356,22 @@ class SSTableReader:
         """Cheap membership test from the key span alone."""
         return self._meta.covers(user_key)
 
-    def get_entry(self, user_key: bytes) -> InternalEntry | None:
-        """Return the newest version of ``user_key`` held by this file.
+    def get_entry(
+        self, user_key: bytes, *, visible_sequence: int | None = None
+    ) -> InternalEntry | None:
+        """Return the newest matching version this file holds.
 
         Args:
             user_key: Exact key to resolve.
+            visible_sequence: Upper sequence bound. When given, the newest
+                version *at or below* it is returned rather than simply the
+                newest one, which is what a snapshot read needs: a file may carry
+                several versions of one key once a merge has retained them.
 
         Returns:
             The first matching record (records are ordered newest-first within a
-            key), or ``None`` when the file cannot contain it.
+            key), or ``None`` when the file cannot contain the key at all, or has
+            nothing of it older than ``visible_sequence``.
         """
         if not self.covers_key(user_key):
             return None
@@ -375,7 +382,9 @@ class SSTableReader:
             return None
         for entry in self._iter_records(block_index):
             if entry.user_key == user_key:
-                return entry
+                if visible_sequence is None or entry.sequence <= visible_sequence:
+                    return entry
+                continue
             if entry.user_key > user_key:
                 return None
         return None

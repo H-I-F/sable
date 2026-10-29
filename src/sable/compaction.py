@@ -28,11 +28,26 @@ because a shallower output could still be hiding something below it. Dropping a
 marker that still has work to do would resurrect deleted data — one of the few
 mistakes here that silently corrupts visible state rather than merely wasting
 space.
+
+Snapshot-aware version retention
+--------------------------------
+Reference counting keeps *files* alive while somebody reads them; it says nothing
+about which *versions* a merged output must keep. A snapshot taken at sequence
+``S`` still reads the newest version whose sequence ``<= S``. Dropping a version
+simply because something newer exists would therefore change what that reader
+sees, which no amount of pinning can repair.
+
+Every version is consequently kept when some live snapshot falls inside its
+visibility band ``[sequence, newer.sequence)``. With no live snapshots
+-- neither below nor above the marker -- the bands collapse and both the marker
+and the versions under it disappear, exactly as before; the policy therefore costs
+nothing when nobody is looking.
 """
 
 from __future__ import annotations
 
 import heapq
+from bisect import bisect_left
 from collections.abc import Callable, Iterable, Iterator, Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -45,6 +60,7 @@ __all__ = [
     "level_bytes",
     "plan_compaction",
     "run_compaction",
+    "version_is_retained",
     "visible_versions",
 ]
 
@@ -122,8 +138,33 @@ def plan_compaction(
     return None
 
 
+def version_is_retained(sequence: int, newer_sequence: int, snapshots: Sequence[int]) -> bool:
+    """True when some live snapshot still resolves to ``sequence``.
+
+    A snapshot ``S`` reads the newest version whose sequence is ``<= S``. So this
+    version is the one some reader still sees exactly when a snapshot lands in
+    the half-open band ``[sequence, newer_sequence)``, where ``newer_sequence``
+    is the next version above it.
+
+    Args:
+        sequence: The elder version being considered for elimination.
+        newer_sequence: Sequence of the next version of the same key.
+        snapshots: Sorted, ascending sequence numbers of live snapshots.
+
+    Returns:
+        Whether the version must survive the merge.
+    """
+    if not snapshots:
+        return False
+    index = bisect_left(snapshots, sequence)
+    return index < len(snapshots) and snapshots[index] < newer_sequence
+
+
 def visible_versions(
-    streams: Iterable[Iterator[InternalEntry]], *, drop_tombstones: bool
+    streams: Iterable[Iterator[InternalEntry]],
+    *,
+    drop_tombstones: bool,
+    snapshots: Sequence[int] = (),
 ) -> Iterator[InternalEntry]:
     """Reduce ordered streams to the versions actually worth writing.
 
@@ -134,18 +175,39 @@ def visible_versions(
     Args:
         streams: Per-file iterators, each already in internal-key order.
         drop_tombstones: Whether deletion markers may be discarded outright.
+        snapshots: Ascending sequence numbers of live snapshots. Any elder
+            version inside a snapshot's visibility band survives even though a
+            newer version exists.
 
     Yields:
         The surviving version of each key.
     """
     previous_key: bytes | None = None
+    previous_sequence = -1
     for entry in heapq.merge(*streams, key=lambda item: item.sort_key):
-        if previous_key is not None and entry.user_key == previous_key:
+        elder = previous_key is not None and entry.user_key == previous_key
+        if elder and not version_is_retained(entry.sequence, previous_sequence, snapshots):
             continue
         previous_key = entry.user_key
-        if entry.is_tombstone and drop_tombstones:
+        # The band of snapshots this version owns ends at the version above it,
+        # whether or not that version is itself written out.
+        previous_sequence = entry.sequence
+        spent = entry.is_tombstone and drop_tombstones
+        if spent and _masks_droppable_versions(entry.sequence, snapshots):
             continue
         yield entry
+
+
+def _masks_droppable_versions(sequence: int, snapshots: Sequence[int]) -> bool:
+    """True when dropping a tombstone at ``sequence`` resurrects nothing.
+
+    A marker may be eliminated only when every version it hides is being
+    eliminated with it. Any live snapshot older than the marker forces the elder
+    versions to survive (see :func:`version_is_retained`), and a *missing* marker
+    would then expose those survivors to every later reader as well — a deletion
+    silently reversing itself once somebody took a snapshot.
+    """
+    return not snapshots or snapshots[0] >= sequence
 
 
 def run_compaction(
@@ -153,14 +215,22 @@ def run_compaction(
     home: Path,
     options: EngineOptions,
     allocate_file_id: Callable[[], int],
+    *,
+    snapshots: Sequence[int] = (),
 ) -> list[SSTableMeta]:
     """Merge ``job.inputs`` into new tables one level down.
+
+    The merge reads its inputs without holding any engine lock: nothing it reads
+    can change (SSTables are immutable once published) and its outputs are only
+    linked in later, under the engine lock, by whoever installs the job.
 
     Args:
         job: Work item from :func:`plan_compaction`.
         home: Database directory the inputs live in.
         options: Block geometry and tombstone-retention policy.
         allocate_file_id: Source of fresh file identifiers.
+        snapshots: Ascending sequence numbers of live snapshots whose view must
+            survive the merge.
 
     Returns:
         Metadata for each produced table. Empty when every input entry was
@@ -174,7 +244,9 @@ def run_compaction(
         writer: SSTableWriter | None = None
 
         for entry in visible_versions(
-            [reader.iter_all() for reader in readers], drop_tombstones=drop_tombstones
+            [reader.iter_all() for reader in readers],
+            drop_tombstones=drop_tombstones,
+            snapshots=snapshots,
         ):
             if writer is None:
                 file_id = allocate_file_id()

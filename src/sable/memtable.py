@@ -8,6 +8,12 @@ concurrency, and every mutating caller serialises through it.
 
 Three properties are enforced structurally rather than by convention:
 
+* **Structural serialisation.** One lock guards linking and traversal. A reader
+  materialises the node run it means to walk and releases the lock immediately,
+  so a writer is never blocked for the duration of a scan, while a traverser can
+  never observe a half-linked tower. The engine still owns durability and version
+  ordering; this lock protects nothing but the shape of one table.
+
 * **Strictly increasing sequences.** Each table remembers the highest sequence
   it has admitted. A caller that tries to insert out of order — which would
   silently corrupt read-your-writes semantics by letting a stale version win —
@@ -22,6 +28,7 @@ Three properties are enforced structurally rather than by convention:
 
 from __future__ import annotations
 
+import threading
 from collections.abc import Iterator
 
 from sable.errors import InvalidArgumentError
@@ -92,6 +99,7 @@ class MemTable:
         self._frozen = False
         self._smallest_key: bytes | None = None
         self._largest_key: bytes | None = None
+        self._mutation = threading.Lock()
 
         MemTable._instance_seeds += 1
         self._levels = _LevelSource(MemTable._instance_seeds * 0x2545F491)
@@ -150,18 +158,20 @@ class MemTable:
                 regressed — both indicate a caller bug that would otherwise
                 surface far away as a stale read.
         """
-        if self._frozen:
-            raise InvalidArgumentError("cannot mutate a frozen memtable")
-        if entry.sequence <= self._last_sequence:
-            raise InvalidArgumentError(
-                f"sequence {entry.sequence} does not strictly increase past {self._last_sequence}"
-            )
+        with self._mutation:
+            if self._frozen:
+                raise InvalidArgumentError("cannot mutate a frozen memtable")
+            if entry.sequence <= self._last_sequence:
+                raise InvalidArgumentError(
+                    f"sequence {entry.sequence} does not strictly increase past "
+                    f"{self._last_sequence}"
+                )
 
-        self._link(entry)
-        self._version_count += 1
-        self._last_sequence = entry.sequence
-        self._payload_bytes += entry.heap_bytes()
-        self._widen_bounds(entry.user_key)
+            self._link(entry)
+            self._version_count += 1
+            self._last_sequence = entry.sequence
+            self._payload_bytes += entry.heap_bytes()
+            self._widen_bounds(entry.user_key)
 
     def put(self, user_key: bytes, sequence: int, value: bytes) -> InternalEntry:
         """Stage a live value and return the entry actually stored."""
@@ -177,7 +187,8 @@ class MemTable:
 
     def freeze(self) -> None:
         """Switch to read-only; the flush thread now owns the contents."""
-        self._frozen = True
+        with self._mutation:
+            self._frozen = True
 
     # -- reads -------------------------------------------------------------
 
@@ -192,19 +203,27 @@ class MemTable:
             seen the key. Callers decide visibility: a tombstone result means
             "deleted here", which shadows anything in lower levels.
         """
-        node = self._descend_to(user_key)
-        if node is None or node.entry.user_key != user_key:
+        with self._mutation:
+            node = self._descend_to(user_key)
+            candidate = None if node is None else node.entry
+        if candidate is None or candidate.user_key != user_key:
             return None
-        return node.entry
+        return candidate
 
     def iter_range(self, key_range: KeyRange | None = None) -> Iterator[InternalEntry]:
         """Yield every stored version inside ``key_range``, newest-first per key.
 
         Args:
             key_range: Inclusive window; unbounded when omitted.
+
+        Returns:
+            An iterator over a snapshot of the matching nodes. The run is
+            materialised under the structural lock and then walked lock-free, so
+            concurrent writes neither block nor observe mid-scan interference.
         """
-        for node in self._nodes_in(key_range):
-            yield node.entry
+        with self._mutation:
+            nodes = list(self._nodes_in(key_range))
+        return (node.entry for node in nodes)
 
     def iter_latest(self, key_range: KeyRange | None = None) -> Iterator[InternalEntry]:
         """Yield only the newest version of each key in range.
@@ -226,7 +245,8 @@ class MemTable:
 
     def key_edge_slice(self) -> tuple[bytes | None, bytes | None]:
         """Return ``(smallest_key, largest_key)`` for SSTable metadata."""
-        return self._smallest_key, self._largest_key
+        with self._mutation:
+            return self._smallest_key, self._largest_key
 
     # -- internals ---------------------------------------------------------
 
