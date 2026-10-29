@@ -131,3 +131,50 @@ def test_home_defaults_to_environment_variable(
     assert code == EXIT_OK
     assert out == b"env-value\n"
     assert target.exists()
+
+
+def test_scan_emits_ordered_key_value_pairs(
+    home: Path, capsysbinary: pytest.CaptureFixture[bytes]
+) -> None:
+    code, _, _ = run("--home", str(home), "put", "a", "1", capsysbinary=capsysbinary)
+    assert code == EXIT_OK
+    run("--home", str(home), "put", "b", "2", capsysbinary=capsysbinary)
+    run("--home", str(home), "put", "c", "3", capsysbinary=capsysbinary)
+    run("--home", str(home), "delete", "b", capsysbinary=capsysbinary)
+
+    code, out, _ = run("--home", str(home), "scan", capsysbinary=capsysbinary)
+    assert code == EXIT_OK
+    assert out == b"a\t1\nc\t3\n", "a deleted key must be absent, not emitted with a sentinel"
+
+
+def test_scan_honours_window_limit_and_bound_mode(
+    home: Path, capsysbinary: pytest.CaptureFixture[bytes]
+) -> None:
+    for index in range(5):
+        run("--home", str(home), "put", f"k{index}", str(index), capsysbinary=capsysbinary)
+
+    code, out, _ = run("--home", str(home), "scan", "k1", "k3", capsysbinary=capsysbinary)
+    assert code == EXIT_OK
+    assert out == b"k1\t1\nk2\t2\n"
+
+    code, out, _ = run(
+        "--home", str(home), "scan", "k1", "k3", "--end-inclusive", capsysbinary=capsysbinary
+    )
+    assert code == EXIT_OK
+    assert out == b"k1\t1\nk2\t2\nk3\t3\n"
+
+    code, out, _ = run("--home", str(home), "scan", "--limit", "2", capsysbinary=capsysbinary)
+    assert code == EXIT_OK
+    assert out == b"k0\t0\nk1\t1\n"
+
+
+def test_scan_hex_mode_roundtrips_binary_payloads(
+    home: Path, capsysbinary: pytest.CaptureFixture[bytes]
+) -> None:
+    key = bytes([0x00, 0xFF, 0x10])
+    value = bytes([0xDE, 0xAD])
+    run("--home", str(home), "put", "--hex", key.hex(), value.hex(), capsysbinary=capsysbinary)
+
+    code, out, _ = run("--home", str(home), "scan", "--hex", capsysbinary=capsysbinary)
+    assert code == EXIT_OK
+    assert out == key.hex().encode() + b"\t" + value.hex().encode() + b"\n"
