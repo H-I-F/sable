@@ -24,6 +24,9 @@ classifiers = [
 ]
 dependencies = []
 
+[project.scripts]
+sable = "sable.cli:main"
+
 [project.urls]
 Repository = "https://github.com/MKA930/sable"
 

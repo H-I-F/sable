@@ -273,16 +273,20 @@ class EngineStats:
     wal_bytes_written: int = 0
     sstable_bytes_written: int = 0
 
+    def as_dict(self) -> dict[str, int]:
+        """Snapshot every counter. Slots classes have no ``__dict__``."""
+        return {
+            "puts": self.puts,
+            "deletes": self.deletes,
+            "gets": self.gets,
+            "get_hits": self.get_hits,
+            "scans": self.scans,
+            "flushes": self.flushes,
+            "compactions": self.compactions,
+            "bloom_rejections": self.bloom_rejections,
+            "wal_bytes_written": self.wal_bytes_written,
+            "sstable_bytes_written": self.sstable_bytes_written,
+        }
+
     def copy(self) -> EngineStats:
-        return EngineStats(
-            puts=self.puts,
-            deletes=self.deletes,
-            gets=self.gets,
-            get_hits=self.get_hits,
-            scans=self.scans,
-            flushes=self.flushes,
-            compactions=self.compactions,
-            bloom_rejections=self.bloom_rejections,
-            wal_bytes_written=self.wal_bytes_written,
-            sstable_bytes_written=self.sstable_bytes_written,
-        )
+        return EngineStats(**self.as_dict())

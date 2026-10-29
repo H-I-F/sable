@@ -137,6 +137,11 @@ class Engine:
         return self._stats.copy()
 
     @property
+    def last_sequence(self) -> int:
+        """Highest sequence admitted so far; -1 for a brand-new store."""
+        return self._last_sequence
+
+    @property
     def level_files(self) -> list[list[SSTableMeta]]:
         """Per-level table metadata, newest first inside each level."""
         return [list(level) for level in self._levels]
