@@ -30,6 +30,7 @@ import zlib
 from collections.abc import Callable, Iterator
 from pathlib import Path
 
+from sable.compaction import CompactionJob, plan_compaction, run_compaction
 from sable.errors import (
     ClosedEngineError,
     CorruptManifestError,
@@ -83,6 +84,7 @@ class Engine:
         self._closed = False
         self._wal: WriteAheadLog | None = None
         self._wal_generation = 0
+        self._pinned_obsolete: list[SSTableMeta] = []
 
     # -- lifecycle ---------------------------------------------------------
 
@@ -347,6 +349,11 @@ class Engine:
             # Only now that the table is visible in the manifest is it safe to
             # retire the log that carried those same entries.
             self._rotate_wal()
+            # Compaction is deliberately *not* triggered from here. An explicit
+            # flush is an operator action with an observable result; folding a
+            # merge into it would make level state depend on timing rather than
+            # on what the caller asked for. The budget-driven path below owns
+            # compaction, the way a background compactor would.
 
     # -- internals ---------------------------------------------------------
 
@@ -354,8 +361,9 @@ class Engine:
         """Freeze proactively once the memtable crosses its budget.
 
         Flushing inline (rather than on a background thread) keeps failure modes
-        observable: a full\filled threshold either publishes successfully or the
-        write that triggered it raises. There is no hidden queue to lose.
+        observable: crossing the threshold either publishes successfully or the
+        write that triggered it raises. There is no hidden queue to lose, and no
+        separate scheduler whose failure could go unnoticed.
         """
         if self._active.approximate_bytes < self._options.memtable_bytes_threshold:
             return
@@ -365,6 +373,7 @@ class Engine:
         self._active = MemTable()
         self._seal_one_immutable()
         self._rotate_wal()
+        self._maybe_compact()
 
     # -- write-ahead log ---------------------------------------------------
 
@@ -442,9 +451,65 @@ class Engine:
         self._levels[0].insert(0, meta)
         self._publish_manifest()
 
-    def _write_table(self, table: MemTable, *, level: int) -> SSTableMeta:
+    def compact(self) -> bool:
+        """Run one compaction if the tree needs one.
+
+        Returns:
+            ``True`` when work was done. A caller wiring this into a maintenance
+            loop can drive the tree to balance by repeating until ``False``.
+        """
+        with self._lock:
+            self._require_open()
+            job = plan_compaction(self._levels, self._options)
+            if job is None:
+                return False
+            outputs = run_compaction(
+                job, self._home, self._options, self._allocate_file_id
+            )
+            self._install_compaction(job, outputs)
+            self._stats.compactions += 1
+            return True
+
+    def _maybe_compact(self) -> None:
+        """Compact opportunistically after a flush."""
+        self.compact()
+
+    def _install_compaction(self, job: CompactionJob, outputs: list[SSTableMeta]) -> None:
+        """Swap merged outputs in for their inputs and retire what is dead.
+
+        Args:
+            job: The completed work item.
+            outputs: Tables produced at ``job.target_level``.
+        """
+        retired_ids = job.input_ids
+        for level_index, level in enumerate(self._levels):
+            self._levels[level_index] = [
+                meta for meta in level if meta.file_id not in retired_ids
+            ]
+        target_level = self._levels[job.target_level]
+        target_level.extend(outputs)
+        target_level.sort(key=lambda meta: meta.file_id, reverse=True)
+        self._publish_manifest()
+
+        for meta in job.inputs:
+            reader = self._readers.pop(meta.file_id, None)
+            if reader is not None:
+                reader.close()
+            if meta.refs > 0:
+                # A live snapshot still reads this file; deletion waits until it
+                # is released rather than breaking the reader underneath it.
+                self._pinned_obsolete.append(meta)
+                continue
+            (self._home / meta.file_name).unlink(missing_ok=True)
+        self._seal_home_directory()
+
+    def _allocate_file_id(self) -> int:
         file_id = self._next_file_id
         self._next_file_id += 1
+        return file_id
+
+    def _write_table(self, table: MemTable, *, level: int) -> SSTableMeta:
+        file_id = self._allocate_file_id()
         target = self._home / f"{file_id:06d}.sst"
         writer = SSTableWriter(target, self._options, file_id=file_id, level=level)
         for entry in table.iter_latest():
