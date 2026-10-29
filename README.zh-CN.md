@@ -31,6 +31,7 @@ $ sable stats --json | head -20
 - [快速开始](#快速开始)
 - [文件布局](#文件布局)
 - [测试矩阵](#测试矩阵)
+- [基准测试](#基准测试)
 - [许可证](#许可证)
 
 ## 设计哲学与边界 (Design Philosophy & Non-Goals)
@@ -235,6 +236,52 @@ python examples/crash_demo.py               # 输出 "recovered: N"，失败时�
 ```
 
 所有并发测试都用 `threading.Barrier` 会合，而不是靠 `sleep` 等待，因此“被测交叠”是被保证发生的，而不是碰巧发生；工作线程一旦卡死，测试会直接失败而不是把 CI 挂住。
+
+## 基准测试
+
+由 `python -m benchmarks.bench_engine --markdown` 实测得到——单次运行、本机环境、
+每一条已确认写入都执行 `fsync`：
+
+- Engine: sable 0.1.0
+- Python: 3.11.1 (linux-x86_64)
+- OS: Linux 6.6.117-45.11.3.tl4.x86_64
+- CPU count: 32
+- 值大小：64 字节，5,000 个键，随机种子 20261030
+
+| workload | iterations | seconds | ops/sec | MiB/s |
+|---|---|---|---|---|
+| put (durable, fsync each) | 5,000 | 22.419 | 223 | 0.01 |
+| flush -> L0 | 5,000 | 0.061 | 82,365 | 0.00 |
+| get hit | 5,000 | 0.235 | 21,298 | 0.00 |
+| get miss | 5,000 | 0.041 | 122,219 | 0.00 |
+| full scan | 20 | 0.208 | 96 | 0.00 |
+| compaction (jobs) | 1 | 0.118 | 9 | 0.00 |
+| reopen + replay | 10 | 0.009 | 1,076 | 0.00 |
+| put (fsync disabled) | 5,000 | 0.046 | 108,687 | 6.63 |
+
+```
+get miss / get hit      : 5.74x（Bloom 剪枝 vs. 读取一个数据块）
+fsync disabled / durable: 487.33x（为“进程被杀也不丢”付出的代价）
+```
+
+如何解读这些数据：
+
+- **持久化写入的成本就是稳定存储的成本。** 223 ops/sec 折合约 4.5 ms 一次 `fsync`；
+  同一个负载关掉 fsync 后快 487 倍。瓶颈不在引擎而在磁盘——对于“ack 即代表能活过
+  进程崩溃”的存储引擎，这正是应有的形态。
+- **不存在的键比存在的键快 5.7 倍**，因为 Bloom Filter 直接拒绝，不需要读取任何
+  数据块。这是过滤器块带来的最直观收益。
+- **扫描吞吐以“整段范围遍历”为单位**：96 次/秒 × 5,000 键 ≈ 48 万键/秒，走的
+  是跨层归并路径。
+- **重开成本主要来自 WAL 重放**，在这个数据量级下仍是个位数毫秒。
+
+换一组参数复测：
+
+```bash
+python -m benchmarks.bench_engine --iters 20000 --value-bytes 256 --markdown
+```
+
+以上均为单次运行的本机数据：比值是结论，绝对值只是一个快照。
 
 ## 许可证
 

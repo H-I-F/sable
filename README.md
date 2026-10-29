@@ -33,6 +33,7 @@ $ sable stats --json | head -20
 - [Quickstart](#quickstart)
 - [File layout](#file-layout)
 - [Testing](#testing)
+- [Benchmarks](#benchmarks)
 - [License](#license)
 
 ## Design Philosophy & Non-Goals
@@ -250,6 +251,56 @@ python examples/crash_demo.py               # prints "recovered: N", non-zero on
 Every concurrency test rendezvouses on a `threading.Barrier` rather than sleeping,
 so the intended overlap is guaranteed rather than merely likely. Hung workers fail
 the run instead of hanging CI.
+
+## Benchmarks
+
+Measured with `python -m benchmarks.bench_engine --markdown` — one run, on this
+machine, with `fsync` enabled for every acknowledged write:
+
+- Engine: sable 0.1.0
+- Python: 3.11.1 (linux-x86_64)
+- OS: Linux 6.6.117-45.11.3.tl4.x86_64
+- CPU count: 32
+- Value size: 64 bytes, 5,000 keys, seed 20261030
+
+| workload | iterations | seconds | ops/sec | MiB/s |
+|---|---|---|---|---|
+| put (durable, fsync each) | 5,000 | 22.419 | 223 | 0.01 |
+| flush -> L0 | 5,000 | 0.061 | 82,365 | 0.00 |
+| get hit | 5,000 | 0.235 | 21,298 | 0.00 |
+| get miss | 5,000 | 0.041 | 122,219 | 0.00 |
+| full scan | 20 | 0.208 | 96 | 0.00 |
+| compaction (jobs) | 1 | 0.118 | 9 | 0.00 |
+| reopen + replay | 10 | 0.009 | 1,076 | 0.00 |
+| put (fsync disabled) | 5,000 | 0.046 | 108,687 | 6.63 |
+
+```
+get miss / get hit      : 5.74x (Bloom pruning vs. a block read)
+fsync disabled / durable: 487.33x (the price of surviving a crash)
+```
+
+Reading these honestly:
+
+- **Durable writes cost what stable storage costs.** 223 ops/sec is around 4.5 ms
+  per `fsync` on this filesystem, and the same workload without it is 487x faster.
+  The engine is not the bottleneck; the disk is. That is the correct shape for a
+  store whose acknowledgement means "survives process death".
+- **Absent keys are 5.7x cheaper than present ones** because the Bloom filter
+  rejects them without reading a data block. This is the single clearest
+  observable effect of the filter block.
+- **Scan throughput is per full range walk**, not per key: 96 walks/sec over
+  5,000-key ranges is roughly 480k keys/sec through the multi-level merge.
+- **Reopen cost is dominated by WAL replay**, and stays in the single-digit
+  millisecond range at this scale.
+
+Reproduce with different shapes:
+
+```bash
+python -m benchmarks.bench_engine --iters 20000 --value-bytes 256 --markdown
+```
+
+Numbers from one run on one machine; treat the ratios as the result and the
+absolute figures as a snapshot.
 
 ## License
 

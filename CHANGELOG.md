@@ -52,6 +52,11 @@ decision stated as a filesystem invariant.
   discard what a live view can still read.
 - **Crash-recovery test matrix** — ten `SIGKILL` injection points auditing a
   reopened store against exactly the writes it acknowledged.
+- **Benchmark harness** — `python -m benchmarks.bench_engine` measures durable
+  writes, memtable publish, point hits, point misses, full scans, compaction and
+  reopen cost, and emits the Markdown table the READMEs embed.
+- **Container image** — multi-stage build producing a wheel-only runtime that runs
+  unprivileged with data on a volume.
 
 ### Changed
 
