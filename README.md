@@ -12,11 +12,13 @@ compaction.
 [![Dependencies](https://img.shields.io/badge/runtime%20deps-0-brightgreen.svg)](pyproject.toml)
 [![Docs](https://img.shields.io/badge/docs-knowledge%20base-blue.svg)](docs/README.md)
 
-`sable` is a complete single-node storage engine in **1,826 lines of pure Python
-logic** (3,416 lines counting the docstrings that explain every layout): a
+`sable` is a complete single-node storage engine in **2,000 lines of pure Python
+logic** (3,492 lines counting the docstrings that explain every layout): a
 chronological write-ahead log, a skip-list memtable, leveled immutable SSTables
 with per-block checksums and Bloom filters, a multi-level merge read path, and a
-compactor that reclaims versions nobody can read any more.
+compactor that reclaims versions nobody can read any more. A further 949 lines of
+read-only diagnostics — three inspectors and a CLI — answer questions about a store
+without opening it.
 
 ```console
 $ sable put hello world
@@ -72,7 +74,7 @@ demonstrates recovery end to end.
 ### Goals
 - **Deterministic Crash-Consistency**: Strict adherence to OS filesystem invariants (`append-before-apply`, `write-temp → fsync → rename → fsync(parent-dir)`).
 - **Verifiable Correctness**: A comprehensive test suite featuring SIGKILL crash injection and multi-threaded race barriers.
-- **Auditable Clarity**: Under 2,000 lines of pure Python logic, making every byte-level layout and state transition inspectable without sprawling abstraction layers.
+- **Auditable Clarity**: 2,000 lines of pure Python logic, making every byte-level layout and state transition inspectable without sprawling abstraction layers.
 
 ### Non-Goals
 - **Sub-millisecond Raw Throughput**: We do not bypass the Python runtime or CPython GIL to chase microsecond read/write benchmarks.
