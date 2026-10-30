@@ -30,7 +30,7 @@ PR-scoped acceptance command passes locally **and** the PR is merged.
 
 ## Phase 3 — Pre-Release Hardening & Governance (PR 22 ~ PR 31)
 
-- [ ] PR 22: feat(inspect): WAL 二进制帧可视化检查器
+- [x] PR 22: feat(inspect): WAL 二进制帧可视化检查器
 - [ ] PR 23: feat(inspect): SSTable 块与 Bloom Filter 解析器
 - [ ] PR 24: feat(inspect): 引擎文件版本拓扑与层级视图
 - [ ] PR 25: test(chaos): 磁盘空间耗尽 (ENOSPC) 故障注入测试
