@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import argparse
 import enum
+import sys
 import zlib
 from dataclasses import dataclass
 from pathlib import Path
@@ -282,8 +283,11 @@ def main(argv: list[str] | None = None) -> int:
         argv: Argument vector; ``None`` reads ``sys.argv``.
 
     Returns:
-        Always ``0``. The table content, not the exit status, carries the verdict
-        so the command composes cleanly with pipelines.
+        ``0`` once a segment was read, whatever its frames look like: the table
+        content, not the exit status, carries the verdict so the command composes
+        cleanly with pipelines. ``2`` when the path does not name a readable file,
+        because "no frames" and "no such file" must not look the same to a
+        pipeline watching the exit status.
     """
     parser = argparse.ArgumentParser(
         prog="python -m sable.inspector",
@@ -296,6 +300,10 @@ def main(argv: list[str] | None = None) -> int:
         help="treat a terminal-frame CRC mismatch as corruption, not a torn tail",
     )
     args = parser.parse_args(argv)
+
+    if not args.path.is_file():
+        print(f"error: not a readable file: {args.path}", file=sys.stderr)
+        return 2
 
     reports = inspect_wal(args.path, strict_tail_crc=args.strict_tail_crc)
     print(format_table(reports))

@@ -40,3 +40,9 @@ PR-scoped acceptance command passes locally **and** the PR is merged.
 - [x] PR 29: docs(reports): 基于真实压测数据的预发版性能基准报告
 - [x] PR 30: docs(governance): 开源贡献指南 CONTRIBUTING.md
 - [x] PR 31: build(meta): 统一本地开发与测试命令的 Makefile
+- [x] PR 32: fix(inspect): 检查器 CLI 在文件缺失或损坏时以退出码 2 报错，而非打印空表或抛栈
+
+> PR 32 不在原计划的 10 项之内：它是 PR 30（贡献指南）逐条实跑文档命令时发现的缺陷 ——
+> `python -m sable.sstable_inspector <不存在的路径>` 会抛 `FileNotFoundError` 栈，
+> 而 `python -m sable.inspector <不存在的路径>` 会打印「0 frame(s)」并以 0 退出，
+> 于是管道无法区分「文件为空」与「文件不存在」。两条路径都已修正并有测试覆盖。
