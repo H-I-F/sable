@@ -19,3 +19,11 @@ PR-scoped acceptance command passes locally **and** the PR is merged.
 - [x] PR 14: GitHub Actions 生产级 CI 检查管线
 - [x] PR 15: 容器化多阶段 Dockerfile 与双语硬核架构 README
 - [x] PR 16: 基准测试套件与最终性能数据归档
+
+## Phase 2 — Engineering Knowledge Base (PR 17 ~ PR 21)
+
+- [ ] PR 17: docs(skills): 沉淀存储引擎底层核心工程实践指南
+- [ ] PR 18: docs(faq): 双语硬核存储系统高频技术追问与深度解答
+- [ ] PR 19: docs(adr): 落地工业级架构决策记录 (ADR-001 ~ ADR-005)
+- [ ] PR 20: bench(stress): 增加多线程并发读写与高竞争压测基准
+- [ ] PR 21: docs(portal): 顶流双语主文档重构与交互式架构索引中枢
