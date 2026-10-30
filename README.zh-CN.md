@@ -43,15 +43,17 @@ $ sable stats --json | head -20
 ## 文档
 
 [`docs/`](docs/README.zh-CN.md) 下的工程知识库，是本主文档的长文配套：深入的工程
-实践指南、双语硬核问答、架构决策记录（ADR），以及基准测试脚本。当你需要的是「**为什么**」
-而非「**怎么做**」时，从这里开始。
+实践指南、双语硬核问答、架构决策记录（ADR）、基准测试脚本、实测性能报告，以及基于引擎的
+实践配方。当你需要的是「**为什么**」而非「**怎么做**」时，从这里开始。
 
 | 知识库入口 | 内容 |
 | --- | --- |
 | [工程实践 Skills](docs/README.zh-CN.md#工程实践-skills底层实现指南) | WAL/截断恢复、原子落盘、并发控制——每篇都锚定源码 |
 | [硬核问答 FAQ（中文）](docs/faq/interview-qa-zh.md) | 八个存储系统追问，配 Mermaid 图解 |
 | [ADR-001 … ADR-005](docs/README.zh-CN.md#架构决策记录-adr) | 每个磁盘/内存契约背后的决策 |
-| [基准测试](docs/README.zh-CN.md#基准测试-benchmarks) | 并发压测与 WAL 吞吐上限脚本 |
+| [基准测试](docs/README.zh-CN.md#基准测试-benchmarks) | 并发压测、WAL 吞吐上限、读放大矩阵 |
+| [实测报告](docs/reports/benchmark-2024.md) | 这个引擎在一台具名机器上到底跑到多少，以及这些数字**不**覆盖什么 |
+| [实践配方](docs/README.zh-CN.md#实践配方-recipes) | 用引擎搭东西，例如只用范围扫描与墓碑做 [TTL 淘汰](docs/recipes/ttl-eviction.md) |
 
 上述保证背后的断言，由 [`tests/test_crash.py`](tests/test_crash.py)（十个 SIGKILL
 注入点）与 [`tests/test_concurrent.py`](tests/test_concurrent.py)（Barrier 驱动的

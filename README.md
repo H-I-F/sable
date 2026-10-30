@@ -46,15 +46,18 @@ $ sable stats --json | head -20
 
 The engineering knowledge base under [`docs/`](docs/README.md) is the long-form
 companion to this README: deep-dive skills guides, a bilingual hard-Q&A, the
-architecture decision records (ADRs), and the benchmark harnesses. Start there
-when you need to know **why**, not just **how**.
+architecture decision records (ADRs), the benchmark harnesses, a measured
+performance report, and recipes for building on the engine. Start there when you
+need to know **why**, not just **how**.
 
 | Knowledge base entry | What it covers |
 | --- | --- |
 | [Skills guides](docs/README.md#skills-low-level-implementation-practice) | WAL/torn-tail recovery, atomic publish, concurrency control — each anchored to source |
 | [FAQ (bilingual)](docs/faq/interview-qa-en.md) | eight storage-system questions with Mermaid diagrams |
 | [ADR-001 … ADR-005](docs/README.md#architecture-decision-records) | the decisions behind every on-disk and in-memory contract |
-| [Benchmarks](docs/README.md#benchmarks) | concurrent stress and WAL throughput harnesses |
+| [Benchmarks](docs/README.md#benchmarks) | concurrent stress, WAL throughput and read-amplification harnesses |
+| [Benchmark report](docs/reports/benchmark-2024.md) | what this engine actually measures on one named host — and what the numbers do not cover |
+| [Recipes](docs/README.md#recipes-building-on-the-engine) | building on the engine, e.g. [TTL eviction](docs/recipes/ttl-eviction.md) with nothing but range scans and tombstones |
 
 The assertions behind the guarantees above are exercised by
 [`tests/test_crash.py`](tests/test_crash.py) (ten SIGKILL injection points) and

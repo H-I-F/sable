@@ -18,6 +18,8 @@
 | [FAQ](#faq-hard-storage-system-questions) | interviews, design reviews, "why not just…" pushback | bilingual Q&A with Mermaid diagrams |
 | [Architecture Decision Records](#architecture-decision-records) | anyone changing the on-disk or in-memory contracts | ADR-001 … ADR-005 |
 | [Benchmarks](#benchmarks) | performance work, regression hunting | runnable harnesses |
+| [Reports](#reports-measured-numbers) | capacity planning, "will this hold at 10x" | measured runs on a named host |
+| [Recipes](#recipes-building-on-the-engine) | solving a problem *with* the engine | runnable patterns, cost tables |
 | [Source map](#source-map) | finding the code behind a concept | module table |
 
 ## Skills: low-level implementation practice
@@ -63,7 +65,7 @@ Consequences** form. Read these before changing any on-disk or in-memory contrac
 
 ## Benchmarks
 
-All three are reproducible and self-asserting: a clean run exits `0` and prints a
+All four are reproducible and self-asserting: a clean run exits `0` and prints a
 verdict; a violated invariant raises instead of printing a misleading number.
 
 - [Concurrent read/write stress under compaction](../benchmarks/bench_concurrent.py) —
@@ -72,9 +74,40 @@ verdict; a violated invariant raises instead of printing a misleading number.
 - [WAL throughput ceilings](../benchmarks/bench_wal_throughput.py) —
   `python -m benchmarks.bench_wal_throughput`. Durable vs. grouped vs. unsafe puts,
   measured against real disk `fsync`.
+- [Read amplification matrix](../benchmarks/bench_read_amplification.py) —
+  `python -m benchmarks.bench_read_amplification`. Physical block reads per logical
+  point read across two file layouts × filter on/off × hit/miss, taken from each
+  reader's own counter rather than estimated.
 - [Core engine benchmark](../benchmarks/bench_engine.py) —
   `python -m benchmarks.bench_engine --markdown`. The headline numbers used in the
   README.
+
+## Reports: measured numbers
+
+Benchmarks measure; a report commits to a reading of them, together with the host it
+was taken on and the parts it does not cover.
+
+- [Pre-release benchmark report](reports/benchmark-2024.md) — write path (198–219
+  durable records/s against 102,398–117,160 with `fsync` disabled), read path
+  (p50 38.7–41.4 µs on a hit, 8.2–9.0 µs on a miss), write amplification 3.54x
+  decomposed into WAL, flush and merge, space amplification 1.17x per generation
+  and 2.35x after one uncompacted overwrite, and why six reading threads deliver
+  0.98x what one does. Every figure is from a committed script; where a measurement
+  drifts between runs the report publishes the spread.
+
+## Recipes: building on the engine
+
+The engine is the substrate, not the product. These pages take a problem the engine
+does *not* solve and build the solution from the two primitives it does expose —
+ordered range scans and tombstones.
+
+- [Application-level TTL eviction](recipes/ttl-eviction.md) — `sable` has no expiry
+  thread and no compaction filter, so expiry is built from a big-endian, fixed-width
+  index key that turns "everything older than now" into a half-open range query.
+  Three runnable snippets (`put_with_ttl`, `get_if_live`, `evict_expired`), the
+  six-stage tombstone lifecycle with the read/write/space cost each stage adds, and
+  the generation-guard rule that keeps a rewritten record from inheriting a stale
+  deadline.
 
 ## Source map
 
