@@ -11,6 +11,10 @@ compaction.
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Dependencies](https://img.shields.io/badge/runtime%20deps-0-brightgreen.svg)](pyproject.toml)
 [![Docs](https://img.shields.io/badge/docs-knowledge%20base-blue.svg)](docs/README.md)
+[![Release](https://img.shields.io/github/v/release/MKA930/sable)](https://github.com/MKA930/sable/releases)
+[![Coverage](coverage.svg)](coverage.svg)
+[![Contributors](https://img.shields.io/github/contributors/MKA930/sable)](https://github.com/MKA930/sable/contributors)
+[![Commit Activity](https://img.shields.io/github/commit-activity/m/MKA930/sable)](https://github.com/MKA930/sable/commits/main)
 
 `sable` is a complete single-node storage engine in **2,000 lines of pure Python
 logic** (3,492 lines counting the docstrings that explain every layout): a

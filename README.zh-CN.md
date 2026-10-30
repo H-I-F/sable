@@ -10,6 +10,10 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Dependencies](https://img.shields.io/badge/runtime%20deps-0-brightgreen.svg)](pyproject.toml)
 [![Docs](https://img.shields.io/badge/docs-knowledge%20base-blue.svg)](docs/README.zh-CN.md)
+[![Release](https://img.shields.io/github/v/release/MKA930/sable)](https://github.com/MKA930/sable/releases)
+[![Coverage](coverage.svg)](coverage.svg)
+[![Contributors](https://img.shields.io/github/contributors/MKA930/sable)](https://github.com/MKA930/sable/contributors)
+[![Commit Activity](https://img.shields.io/github/commit-activity/m/MKA930/sable)](https://github.com/MKA930/sable/commits/main)
 
 `sable` 用 **2,000 行纯 Python 逻辑**（含解释每种布局的 docstring 共 3,492 行）
 实现了一个完整的单机存储引擎：顺序写的预写日志、跳表 MemTable、带块级校验和与
