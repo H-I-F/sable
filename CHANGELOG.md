@@ -57,6 +57,34 @@ decision stated as a filesystem invariant.
   reopen cost, and emits the Markdown table the READMEs embed.
 - **Container image** — multi-stage build producing a wheel-only runtime that runs
   unprivileged with data on a volume.
+- **Store inspectors** — three read-only CLIs that answer questions about a store
+  *without opening it*, which is what makes them usable against the wreckage of a
+  failed run. `python -m sable.inspector` audits a WAL frame by frame and separates
+  a discardable torn tail from a fatal mid-stream checksum; `python -m
+  sable.sstable_inspector` decodes a table's header, sparse index and Bloom
+  geometry, and back-solves the filter's fill ratio into an entry count and false
+  positive rate; `python -m sable.topology` prints which file at which level holds
+  which key range, including active and pinned immutable versions.
+- **Fault-injection suite** — `tests/test_chaos_enospc.py` drives a WAL that refuses
+  every write and a flush whose `fsync` fails, asserting that a rejected write
+  leaves no key visible, no partial `.sst`, no `.tmp-sable` and no phantom key after
+  reopen. `tests/test_chaos_fd_leak.py` asserts the descriptor count returns to
+  baseline after close, stays bounded through mixed write/flush/compact traffic, and
+  holds under three reading threads racing a compactor.
+- **Read-amplification harness** — `python -m benchmarks.bench_read_amplification`
+  reports physical block reads per logical point read across two file layouts
+  (six overlapping L0 files versus one merged run) and filter on/off, taken from each
+  reader's own `data_block_reads` counter rather than estimated.
+- **TTL eviction recipe** — `docs/recipes/ttl-eviction.md` builds expiry from the two
+  primitives the engine exposes (ordered range scans and tombstones) because there
+  is no expiry thread and no compaction filter, and prices the six-stage tombstone
+  lifecycle it creates.
+- **Pre-release benchmark report** — `docs/reports/benchmark-2024.md` publishes the
+  measured write path, read path, and all three amplification factors on one named
+  host, with the spread between runs and an explicit list of what it does not cover.
+- **Contributor guide and Makefile** — `CONTRIBUTING.md` states the four gates and
+  the conventions the tools enforce; `make test | lint | typecheck | chaos | clean`
+  wraps the exact commands CI runs, so "it passed locally" means the same thing.
 
 ### Changed
 
@@ -72,5 +100,15 @@ decision stated as a filesystem invariant.
 - No token, secret or credential is ever written into a source file, commit or
   test fixture; the crash harness runs the interpreter against a script embedded
   in the test module and nothing from the outside.
+
+### Fixed
+
+- The inspector CLIs failed a missing path in opposite ways: `sstable_inspector`
+  raised `FileNotFoundError` with a traceback, while `inspector` printed
+  `0 frame(s)` and exited `0`, so a pipeline could not tell "empty segment" from
+  "segment is gone". Both now exit `2` with a one-line reason on stderr, and the
+  SSTable CLI routes a foreign or corrupt file through the same path. The library
+  functions are unchanged — `inspect_wal` still returns `[]` for a missing file,
+  which is what segment iteration needs.
 
 [0.1.0]: https://github.com/MKA930/sable/releases/tag/v0.1.0
