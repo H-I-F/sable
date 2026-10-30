@@ -33,7 +33,7 @@ PR-scoped acceptance command passes locally **and** the PR is merged.
 - [x] PR 22: feat(inspect): WAL 二进制帧可视化检查器
 - [x] PR 23: feat(inspect): SSTable 块与 Bloom Filter 解析器
 - [x] PR 24: feat(inspect): 引擎文件版本拓扑与层级视图
-- [ ] PR 25: test(chaos): 磁盘空间耗尽 (ENOSPC) 故障注入测试
+- [x] PR 25: test(chaos): 磁盘空间耗尽 (ENOSPC) 故障注入测试
 - [ ] PR 26: test(chaos): 文件描述符泄漏探测与并发熔断测试
 - [ ] PR 27: docs(recipes): 基于 Tombstone 的用户态 TTL 淘汰实践
 - [ ] PR 28: bench(read-amp): 读放大 (Read Amplification) 统计压测脚本
