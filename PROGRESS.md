@@ -30,19 +30,46 @@ PR-scoped acceptance command passes locally **and** the PR is merged.
 
 ## Phase 3 — Pre-Release Hardening & Governance (PR 22 ~ PR 31)
 
-- [x] PR 22: feat(inspect): WAL 二进制帧可视化检查器
-- [x] PR 23: feat(inspect): SSTable 块与 Bloom Filter 解析器
-- [x] PR 24: feat(inspect): 引擎文件版本拓扑与层级视图
-- [x] PR 25: test(chaos): 磁盘空间耗尽 (ENOSPC) 故障注入测试
-- [x] PR 26: test(chaos): 文件描述符泄漏探测与并发熔断测试
-- [x] PR 27: docs(recipes): 基于 Tombstone 的用户态 TTL 淘汰实践
-- [x] PR 28: bench(read-amp): 读放大 (Read Amplification) 统计压测脚本
-- [x] PR 29: docs(reports): 基于真实压测数据的预发版性能基准报告
-- [x] PR 30: docs(governance): 开源贡献指南 CONTRIBUTING.md
-- [x] PR 31: build(meta): 统一本地开发与测试命令的 Makefile
-- [x] PR 32: fix(inspect): 检查器 CLI 在文件缺失或损坏时以退出码 2 报错，而非打印空表或抛栈
+> **编号对照**：下表用的是**计划编号**（PR 22 起），实际 GitHub PR 号整体后移一位
+> （计划 PR 22 → 实际 #23），因为 Phase 2 的 PR #22 已经占用了那个号。两者一一对应，
+> 合并顺序与下表顺序完全一致。
+
+- [x] PR 22: feat(inspect): WAL 二进制帧可视化检查器 → [#23]
+- [x] PR 23: feat(inspect): SSTable 块与 Bloom Filter 解析器 → [#24]
+- [x] PR 24: feat(inspect): 引擎文件版本拓扑与层级视图 → [#25]
+- [x] PR 25: test(chaos): 磁盘空间耗尽 (ENOSPC) 故障注入测试 → [#26]
+- [x] PR 26: test(chaos): 文件描述符泄漏探测与并发熔断测试 → [#27]
+- [x] PR 27: docs(recipes): 基于 Tombstone 的用户态 TTL 淘汰实践 → [#28]
+- [x] PR 28: bench(read-amp): 读放大 (Read Amplification) 统计压测脚本 → [#29]
+- [x] PR 29: docs(reports): 基于真实压测数据的预发版性能基准报告 → [#30]
+- [x] PR 30: docs(governance): 开源贡献指南 CONTRIBUTING.md → [#31]
+- [x] PR 31: build(meta): 统一本地开发与测试命令的 Makefile → [#32]
+- [x] PR 32: fix(inspect): 检查器 CLI 在文件缺失或损坏时以退出码 2 报错，而非打印空表或抛栈 → [#33]
 
 > PR 32 不在原计划的 10 项之内：它是 PR 30（贡献指南）逐条实跑文档命令时发现的缺陷 ——
 > `python -m sable.sstable_inspector <不存在的路径>` 会抛 `FileNotFoundError` 栈，
 > 而 `python -m sable.inspector <不存在的路径>` 会打印「0 frame(s)」并以 0 退出，
 > 于是管道无法区分「文件为空」与「文件不存在」。两条路径都已修正并有测试覆盖。
+
+## Phase 4 — Release Prep
+
+收尾阶段。第一项能进版本库，其余三项是仓库侧操作，不进提交。
+
+| 项 | 状态 |
+| --- | --- |
+| `docs(index)`：把 recipe 与 report 接进四处入口（中英双语），`docs(changelog)` 把加固期的工作并入 `[0.1.0]` 并补 `### Fixed` | 本 PR |
+| 打 `v0.1.0` tag 并创建 GitHub Release —— 消除 CHANGELOG 里指向不存在 tag 的死链 | 合并后执行 |
+| 清理 19 个远端 / 19 个本地特性分支（`git cherry` 未合并补丁数为 0），并开启 `delete_branch_on_merge` | 合并后执行 |
+| 仓库治理：补 topics，为 `main` 开启分支保护（要求 PR + CI 通过） | 合并后执行 |
+
+[#23]: https://github.com/MKA930/sable/pull/23
+[#24]: https://github.com/MKA930/sable/pull/24
+[#25]: https://github.com/MKA930/sable/pull/25
+[#26]: https://github.com/MKA930/sable/pull/26
+[#27]: https://github.com/MKA930/sable/pull/27
+[#28]: https://github.com/MKA930/sable/pull/28
+[#29]: https://github.com/MKA930/sable/pull/29
+[#30]: https://github.com/MKA930/sable/pull/30
+[#31]: https://github.com/MKA930/sable/pull/31
+[#32]: https://github.com/MKA930/sable/pull/32
+[#33]: https://github.com/MKA930/sable/pull/33
