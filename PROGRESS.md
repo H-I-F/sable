@@ -27,3 +27,16 @@ PR-scoped acceptance command passes locally **and** the PR is merged.
 - [x] PR 19: docs(adr): 落地工业级架构决策记录 (ADR-001 ~ ADR-005)
 - [x] PR 20: bench(stress): 增加多线程并发读写与高竞争压测基准
 - [x] PR 21: docs(portal): 顶流双语主文档重构与交互式架构索引中枢
+
+## Phase 3 — Pre-Release Hardening & Governance (PR 22 ~ PR 31)
+
+- [ ] PR 22: feat(inspect): WAL 二进制帧可视化检查器
+- [ ] PR 23: feat(inspect): SSTable 块与 Bloom Filter 解析器
+- [ ] PR 24: feat(inspect): 引擎文件版本拓扑与层级视图
+- [ ] PR 25: test(chaos): 磁盘空间耗尽 (ENOSPC) 故障注入测试
+- [ ] PR 26: test(chaos): 文件描述符泄漏探测与并发熔断测试
+- [ ] PR 27: docs(recipes): 基于 Tombstone 的用户态 TTL 淘汰实践
+- [ ] PR 28: bench(read-amp): 读放大 (Read Amplification) 统计压测脚本
+- [ ] PR 29: docs(reports): 基于真实压测数据的预发版性能基准报告
+- [ ] PR 30: docs(governance): 开源贡献指南 CONTRIBUTING.md
+- [ ] PR 31: build(meta): 统一本地开发与测试命令的 Makefile
