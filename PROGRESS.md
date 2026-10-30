@@ -39,4 +39,4 @@ PR-scoped acceptance command passes locally **and** the PR is merged.
 - [x] PR 28: bench(read-amp): 读放大 (Read Amplification) 统计压测脚本
 - [x] PR 29: docs(reports): 基于真实压测数据的预发版性能基准报告
 - [x] PR 30: docs(governance): 开源贡献指南 CONTRIBUTING.md
-- [ ] PR 31: build(meta): 统一本地开发与测试命令的 Makefile
+- [x] PR 31: build(meta): 统一本地开发与测试命令的 Makefile
