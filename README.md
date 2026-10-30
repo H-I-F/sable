@@ -1,3 +1,5 @@
+[English](README.md) | [简体中文](README.zh-CN.md)
+
 # sable
 
 A crash-safe, pure-Python LSM-tree key-value storage engine reference
@@ -8,6 +10,7 @@ compaction.
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%20%7C%203.11-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Dependencies](https://img.shields.io/badge/runtime%20deps-0-brightgreen.svg)](pyproject.toml)
+[![Docs](https://img.shields.io/badge/docs-knowledge%20base-blue.svg)](docs/README.md)
 
 `sable` is a complete single-node storage engine in **1,826 lines of pure Python
 logic** (3,416 lines counting the docstrings that explain every layout): a
@@ -25,17 +28,39 @@ $ sable stats --json | head -20
 
 ## Table of contents
 
+- [Documentation](#documentation)
 - [Design Philosophy & Non-Goals](#design-philosophy--non-goals)
 - [Architecture](#architecture)
 - [Write path](#write-path)
 - [Durability envelope](#durability-envelope)
 - [Crash recovery](#crash-recovery)
+- [MemTable & flush state machine](#memtable--flush-state-machine)
 - [Snapshots and concurrency](#snapshots-and-concurrency)
-- [Quickstart](#quickstart)
 - [File layout](#file-layout)
+- [Quickstart](#quickstart)
 - [Testing](#testing)
 - [Benchmarks](#benchmarks)
 - [License](#license)
+
+## Documentation
+
+The engineering knowledge base under [`docs/`](docs/README.md) is the long-form
+companion to this README: deep-dive skills guides, a bilingual hard-Q&A, the
+architecture decision records (ADRs), and the benchmark harnesses. Start there
+when you need to know **why**, not just **how**.
+
+| Knowledge base entry | What it covers |
+| --- | --- |
+| [Skills guides](docs/README.md#skills-low-level-implementation-practice) | WAL/torn-tail recovery, atomic publish, concurrency control — each anchored to source |
+| [FAQ (bilingual)](docs/faq/interview-qa-en.md) | eight storage-system questions with Mermaid diagrams |
+| [ADR-001 … ADR-005](docs/README.md#architecture-decision-records) | the decisions behind every on-disk and in-memory contract |
+| [Benchmarks](docs/README.md#benchmarks) | concurrent stress and WAL throughput harnesses |
+
+The assertions behind the guarantees above are exercised by
+[`tests/test_crash.py`](tests/test_crash.py) (ten SIGKILL injection points) and
+[`tests/test_concurrent.py`](tests/test_concurrent.py) (barrier-driven
+compactor/scanner races); [`examples/crash_demo.py`](examples/crash_demo.py)
+demonstrates recovery end to end.
 
 ## Design Philosophy & Non-Goals
 
@@ -89,16 +114,16 @@ levels, so encountering one is the hiding mechanism rather than an error.
 
 | Subsystem | Module | Responsibility |
 | --- | --- | --- |
-| Types & options | `sable.types` | `InternalEntry`, `KeyRange`, `SSTableMeta`, budgets |
-| Error taxonomy | `sable.errors` | corruption vs. torn write vs. caller mistake |
-| Durability | `sable.fsutil` | `temp → fsync → rename → fsync(parent-dir)` |
-| WAL | `sable.wal` | frame layout, CRC32, torn-tail truncation |
-| MemTable | `sable.memtable` | deterministic skip list, `(key, -sequence)` order |
-| SSTable | `sable.sstable` | blocks, index, Bloom filter, footer |
-| Bloom filter | `sable.bloom` | probabilistic pruning before any block IO |
-| Compaction | `sable.compaction` | leveled planner, tombstone reclamation |
-| Engine | `sable.engine` | version set, manifest, reads, snapshot leases |
-| CLI | `sable.cli` | `put`, `get`, `delete`, `scan`, `stats` |
+| Types & options | [`sable.types`](src/sable/types.py) | `InternalEntry`, `KeyRange`, `SSTableMeta`, budgets |
+| Error taxonomy | [`sable.errors`](src/sable/errors.py) | corruption vs. torn write vs. caller mistake |
+| Durability | [`sable.fsutil`](src/sable/fsutil.py) | `temp → fsync → rename → fsync(parent-dir)` |
+| WAL | [`sable.wal`](src/sable/wal.py) | frame layout, CRC32, torn-tail truncation |
+| MemTable | [`sable.memtable`](src/sable/memtable.py) | deterministic skip list, `(key, -sequence)` order |
+| SSTable | [`sable.sstable`](src/sable/sstable.py) | blocks, index, Bloom filter, footer |
+| Bloom filter | [`sable.bloom`](src/sable/bloom.py) | probabilistic pruning before any block IO |
+| Compaction | [`sable.compaction`](src/sable/compaction.py) | leveled planner, tombstone reclamation |
+| Engine | [`sable.engine`](src/sable/engine.py) | version set, manifest, reads, snapshot leases |
+| CLI | [`sable.cli`](src/sable/cli.py) | `put`, `get`, `delete`, `scan`, `stats` |
 
 ## Write path
 
@@ -166,6 +191,42 @@ The distinction that matters is between a **torn tail** (partial write at the en
 refuses to proceed). Treating both the same way is how recovery either silently
 drops acknowledged writes or silently accepts damaged ones.
 
+## MemTable & flush state machine
+
+The durability and concurrency guarantees above rest on a small, explicit state
+machine. The skip list lives in [`sable.memtable`](src/sable/memtable.py); the
+transitions are driven by `Engine` in [`sable.engine`](src/sable/engine.py).
+
+```mermaid
+stateDiagram-v2
+    direction TB
+    [*] --> Active: Engine.open
+    Active --> Active: put / delete (sequence++)
+    Active --> Sealed: memtable_bytes_threshold exceeded
+    Sealed --> Flushing: flush() selects it
+    Flushing --> L0: write blocks + index + filter + footer
+    L0 --> Compacting: compact() selects level 0
+    Compacting --> L1N: merge into L1..N, drop tombstones
+    L1N --> [*]
+
+    note right of Sealed
+        A sealed memtable is immutable but still
+        readable: in-flight snapshots hold their
+        lease until they exit the visibility band.
+    end note
+    note right of Compacting
+        Output is published atomically via
+        fsutil.write_atomically; readers on the
+        old file keep a reference-counted lease.
+    end note
+```
+
+A sealed memtable is never "frozen dead": active snapshots keep resolving versions
+from it until they close, and the compaction that later consumes it cannot unlink
+the file while a lease is held. See the
+[concurrency-control guide](docs/skills/concurrency-control.md) for the lease
+rules and the barrier-driven tests that prove them.
+
 ## Snapshots and concurrency
 
 ```python
@@ -186,6 +247,48 @@ usually wrong:
 A view holds nothing but an integer, yet every version inside its visibility band
 `[sequence, newer.sequence)` survives the merge, and a tombstone is never dropped
 while an older view could still be reading the value underneath it.
+
+## File layout
+
+The store is a directory; every artifact inside it is either CRC32-verified or
+skippable, and a single SSTable is laid out so each region is independently
+checkable.
+
+```mermaid
+flowchart TD
+    subgraph dir["sable-data/ (a directory)"]
+        CURRENT["CURRENT<br/>→ MANIFEST-NNNNNN"]
+        MANIFEST["MANIFEST-NNNNNN<br/>version image · CRC32"]
+        WAL["wal-NNNNNN.log<br/>frames · fsync per write"]
+        SST["NNNNNN.sst"]
+    end
+    CURRENT -->|names| MANIFEST
+
+    subgraph sst["one NNNNNN.sst (from HEADER to FOOTER)"]
+        direction TB
+        H["HEADER · 100 B"] --> D["DATA BLOCKS<br/>each block CRC32"]
+        D --> I["INDEX BLOCK<br/>sparse, per-block"]
+        I --> F["FILTER BLOCK<br/>Bloom"]
+        F --> FO["FOOTER · 16 B"]
+    end
+```
+
+On disk, the directory tree is:
+
+```
+sable-data/
+├── CURRENT                 points at the visible manifest
+├── MANIFEST-00000N         complete version image (CRC32 protected)
+├── wal-000001.log          append-only frames, fsync-ed per write
+├── 000001.sst              level 0 (newest flushed memtable)
+└── 000002.sst              level 1..N after compaction
+```
+
+An SSTable is laid out so every region is either verified or skippable:
+
+```
+HEADER (100 B) | DATA BLOCKS (crc32 each) | INDEX BLOCK | FILTER BLOCK | FOOTER (16 B)
+```
 
 ## Quickstart
 
@@ -221,23 +324,6 @@ docker run --rm -v sable-data:/data sable get hello   # -> world
 
 Each `docker run` is otherwise ephemeral by design: the image keeps no state of
 its own, the volume does.
-
-## File layout
-
-```
-sable-data/
-├── CURRENT                 points at the visible manifest
-├── MANIFEST-00000N         complete version image (CRC32 protected)
-├── wal-000001.log          append-only frames, fsync-ed per write
-├── 000001.sst              level 0 (newest flushed memtable)
-└── 000002.sst              level 1..N after compaction
-```
-
-An SSTable is laid out so every region is either verified or skippable:
-
-```
-HEADER (100 B) | DATA BLOCKS (crc32 each) | INDEX BLOCK | FILTER BLOCK | FOOTER (16 B)
-```
 
 ## Testing
 
@@ -299,6 +385,12 @@ Reproduce with different shapes:
 ```bash
 python -m benchmarks.bench_engine --iters 20000 --value-bytes 256 --markdown
 ```
+
+Stress variants live alongside it — see
+[`benchmarks/bench_concurrent.py`](benchmarks/bench_concurrent.py) (concurrent
+reads vs. a live compactor) and
+[`benchmarks/bench_wal_throughput.py`](benchmarks/bench_wal_throughput.py)
+(durable vs. grouped vs. unsafe write ceilings).
 
 Numbers from one run on one machine; treat the ratios as the result and the
 absolute figures as a snapshot.
