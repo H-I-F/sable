@@ -36,7 +36,7 @@ PR-scoped acceptance command passes locally **and** the PR is merged.
 - [x] PR 25: test(chaos): 磁盘空间耗尽 (ENOSPC) 故障注入测试
 - [x] PR 26: test(chaos): 文件描述符泄漏探测与并发熔断测试
 - [x] PR 27: docs(recipes): 基于 Tombstone 的用户态 TTL 淘汰实践
-- [ ] PR 28: bench(read-amp): 读放大 (Read Amplification) 统计压测脚本
+- [x] PR 28: bench(read-amp): 读放大 (Read Amplification) 统计压测脚本
 - [ ] PR 29: docs(reports): 基于真实压测数据的预发版性能基准报告
 - [ ] PR 30: docs(governance): 开源贡献指南 CONTRIBUTING.md
 - [ ] PR 31: build(meta): 统一本地开发与测试命令的 Makefile
