@@ -11,10 +11,11 @@
 [![Dependencies](https://img.shields.io/badge/runtime%20deps-0-brightgreen.svg)](pyproject.toml)
 [![Docs](https://img.shields.io/badge/docs-knowledge%20base-blue.svg)](docs/README.zh-CN.md)
 
-`sable` 用 **1,826 行纯 Python 逻辑**（含解释每种布局的 docstring 共 3,416 行）
+`sable` 用 **2,000 行纯 Python 逻辑**（含解释每种布局的 docstring 共 3,492 行）
 实现了一个完整的单机存储引擎：顺序写的预写日志、跳表 MemTable、带块级校验和与
 Bloom Filter 的分层不可变 SSTable、跨层归并读路径，以及一个回收“无人可读版本”的
-Compactor。
+Compactor。另有 949 行只读诊断代码——三个检查器与一个 CLI——在**不打开**存储库的
+前提下回答关于它的问题。
 
 ```console
 $ sable put hello world
@@ -67,7 +68,7 @@ Compaction / Scan 竞态）共同验证；[`examples/crash_demo.py`](examples/cr
 ### 我们关注的 (Goals)
 - **确定的崩溃一致性**：严格遵守 POSIX 文件系统的刷盘顺序约束（写入临时文件 → `fsync` → 原子替换 → `fsync` 父目录）。
 - **可证伪的正确性验证**：包含由 SIGKILL 注入驱动的崩溃测试矩阵与多线程 Barrier 竞态测试。
-- **高可读与教学级解构**：在 2000 行纯 Python 代码内呈现清晰的二进制帧布局与 Compaction 状态机，无任何冗余的抽象噪音。
+- **高可读与教学级解构**：2,000 行纯 Python 代码呈现清晰的二进制帧布局与 Compaction 状态机，无任何冗余的抽象噪音。
 
 ### 我们不追求的 (Non-Goals)
 - **极限并发吞吐**：受限于 CPython 解释器与 GIL，本项目旨在保证绝对的数据正确性，而非追求微秒级的吞吐表现。
