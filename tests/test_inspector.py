@@ -178,3 +178,22 @@ def test_main_prints_table_and_returns_zero(
     captured = capsys.readouterr().out
     assert "Offset" in captured
     assert "2 frame(s)" in captured
+
+
+def test_main_reports_a_missing_segment_instead_of_zero_frames(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """A path that does not exist exits 2 rather than printing an empty table.
+
+    The library returns ``[]`` for a missing file, which is right for a caller
+    iterating over segments that may have rotated away. A CLI has a different
+    duty: "this file has no frames" and "this file is not there" must not both
+    look like a successful run to whatever is parsing the exit status.
+    """
+    missing = tmp_path / "wal-999999.log"
+
+    assert main([str(missing)]) == 2
+
+    captured = capsys.readouterr()
+    assert "not a readable file" in captured.err
+    assert "frame(s)" not in captured.out

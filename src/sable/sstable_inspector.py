@@ -21,6 +21,7 @@ from __future__ import annotations
 import argparse
 import math
 import struct
+import sys
 import zlib
 from dataclasses import dataclass
 from pathlib import Path
@@ -348,8 +349,11 @@ def main(argv: list[str] | None = None) -> int:
         argv: Argument vector; ``None`` reads ``sys.argv``.
 
     Returns:
-        ``0`` on success. A table that cannot be interpreted raises, which the
-        interpreter surfaces as a non-zero exit with the reason.
+        ``0`` once a table was decoded. ``2`` when the file cannot be read or
+        cannot be interpreted as a table, with the reason on stderr: an operator
+        asking about one file wants to know what is wrong with it, not where the
+        interpreter gave up, and the exit status has to differ from success for
+        the diagnosis to be usable from a script.
     """
     parser = argparse.ArgumentParser(
         prog="python -m sable.sstable_inspector",
@@ -357,7 +361,13 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("path", type=Path, help="path to an NNNNNN.sst file")
     args = parser.parse_args(argv)
-    print(format_report(parse_sstable(args.path)))
+
+    try:
+        inspection = parse_sstable(args.path)
+    except (OSError, CorruptSSTableError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+    print(format_report(inspection))
     return 0
 
 

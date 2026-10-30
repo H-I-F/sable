@@ -129,3 +129,31 @@ def test_main_prints_report_and_returns_zero(
     captured = capsys.readouterr().out
     assert "SSTable:" in captured
     assert "[Bloom]" in captured
+
+
+def test_main_reports_an_unreadable_file_without_a_traceback(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """A missing file exits 2 and says so on stderr, rather than raising."""
+    missing = tmp_path / "000404.sst"
+
+    assert main([str(missing)]) == 2
+
+    captured = capsys.readouterr()
+    assert "error:" in captured.err
+    assert "000404.sst" in captured.err
+    assert captured.out == ""
+
+
+def test_main_reports_a_foreign_file_as_damage(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """A file that is not an SSTable exits 2 with the corruption reason."""
+    foreign = tmp_path / "000405.sst"
+    foreign.write_bytes(b"NOTSABLE" + b"\x00" * 128)
+
+    assert main([str(foreign)]) == 2
+
+    captured = capsys.readouterr()
+    assert "error:" in captured.err
+    assert captured.out == ""
