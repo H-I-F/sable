@@ -846,9 +846,29 @@ class Engine:
         self._seal_home_directory()
 
     def _allocate_file_id(self) -> int:
-        file_id = self._next_file_id
-        self._next_file_id += 1
-        return file_id
+        """Reserve the next file identifier.
+
+        The counter is guarded because two maintenance paths allocate
+        concurrently: a flush publishes a table while holding only
+        ``_flush_lock``, and a compaction allocates its output ids from the merge
+        phase, which deliberately holds nothing at all. Read-modify-write on the
+        counter is not atomic, so without this lock both callers can be handed
+        the same id.
+
+        Two tables sharing an id share a filename, and the second publish
+        atomically replaces the first at that path. Readers key their cache on
+        ``file_id``, so they would then consult one table's index against
+        another table's bytes — which surfaces as a block CRC failure under
+        concurrency, not as anything recognisable. ``_lock`` is reentrant, so
+        callers that already hold it are unaffected.
+
+        Returns:
+            A file id never previously issued by this engine instance.
+        """
+        with self._lock:
+            file_id = self._next_file_id
+            self._next_file_id += 1
+            return file_id
 
     def _write_table(self, table: MemTable, *, level: int, file_id: int) -> SSTableMeta:
         target = self._home / f"{file_id:06d}.sst"

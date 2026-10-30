@@ -39,7 +39,9 @@ directory-fsync sequence guarantees a reader never observes a partial file.
 
 from __future__ import annotations
 
+import os
 import struct
+import threading
 import zlib
 from collections.abc import Iterator
 from pathlib import Path
@@ -48,6 +50,10 @@ from sable.bloom import BloomFilter
 from sable.errors import CorruptSSTableError, InvalidArgumentError
 from sable.fsutil import ATOMIC_TMP_SUFFIX, atomic_write_bytes
 from sable.types import EngineOptions, InternalEntry, InternalKey, KeyRange, OpType, SSTableMeta
+
+# Positional read without a seek; unavailable on some platforms, where the
+# guarded seek/read fallback in SSTableReader._read_at takes over.
+_PREAD = getattr(os, "pread", None)
 
 __all__ = [
     "FILE_MAGIC",
@@ -275,6 +281,11 @@ class SSTableReader:
         self._path = Path(path)
         self._verify = verify_checksums
         self._handle = self._path.open("rb")
+        self._fd = self._handle.fileno()
+        # One reader instance is shared by every thread consulting this file, so
+        # positional reads are unsafe unless the offset is part of the call. See
+        # _read_at for why that matters more than it looks.
+        self._io_lock = threading.Lock()
         self._closed = False
         self._data_block_reads = 0
         self._index_cache: list[tuple[int, int, int, bytes]] | None = None
@@ -541,8 +552,53 @@ class SSTableReader:
         return raw
 
     def _read_at(self, offset: int, size: int) -> bytes:
-        self._handle.seek(offset)
-        chunk = self._handle.read(size)
+        """Read exactly ``size`` bytes at ``offset``, whatever else is reading.
+
+        A single reader instance serves every thread that consults this file, so
+        a seek followed by a read is not safe here: two threads interleaving
+        them read each other's offsets and get each other's bytes. Under load
+        that surfaces as a block CRC failure on a file that is perfectly intact
+        — an error message that points at the disk when the fault is in the
+        reader.
+
+        ``os.pread`` takes the offset as an argument and leaves the file
+        position untouched, so it needs no coordination at all. Where it is
+        unavailable the seek/read pair is kept, guarded by a lock, which
+        serialises readers of this file but is still correct.
+
+        Args:
+            offset: Absolute byte position in the file.
+            size: Bytes to return.
+
+        Returns:
+            Exactly ``size`` bytes.
+
+        Raises:
+            CorruptSSTableError: The file is shorter than the request, which for
+                a published table means the bytes really are missing.
+        """
+        if _PREAD is not None:
+            chunks: list[bytes] = []
+            remaining = size
+            position = offset
+            while remaining:
+                # pread may return a short count at EOF or on a signal, so the
+                # loop is required rather than defensive.
+                chunk = _PREAD(self._fd, remaining, position)
+                if not chunk:
+                    break
+                chunks.append(chunk)
+                remaining -= len(chunk)
+                position += len(chunk)
+            if remaining:
+                raise CorruptSSTableError(
+                    f"{self._path.name} ended early at offset {offset} ({size} bytes requested)"
+                )
+            return b"".join(chunks)
+
+        with self._io_lock:
+            self._handle.seek(offset)
+            chunk = self._handle.read(size)
         if len(chunk) != size:
             raise CorruptSSTableError(
                 f"{self._path.name} ended early at offset {offset} ({size} bytes requested)"

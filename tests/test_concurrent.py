@@ -25,7 +25,7 @@ from helpers import db_path, key_for, value_for
 from sable import ClosedEngineError, Engine, EngineOptions
 from sable.compaction import visible_versions
 from sable.sstable import SSTableReader
-from sable.types import InternalEntry
+from sable.types import InternalEntry, WriteOptions
 
 THREAD_TIMEOUT_SECONDS = 20.0
 # Fixtures that shape the tree by hand need to decide when a flush happens;
@@ -444,3 +444,53 @@ def test_visible_versions_keeps_a_tombstone_that_still_masks_something() -> None
     # A view younger than the marker sees a deletion either way, so nothing needs
     # to be kept: its own victim disappears together with the marker.
     assert sequences((7,)) == []
+
+
+def test_concurrent_maintenance_issues_distinct_file_ids(tmp_path: Path) -> None:
+    """Two maintenance paths allocating at once must never share a filename.
+
+    A flush publishes a table while holding only ``_flush_lock``; a compaction
+    allocates its output ids from the merge phase, which deliberately holds
+    nothing. If the counter is not guarded, both are handed the same id, and two
+    different tables get published at the same path — the second replacing the
+    first atomically.
+
+    Readers key their cache on ``file_id``, so the observable consequence is one
+    table's index being read against another table's bytes: a block CRC failure
+    under concurrency, which is about the last shape anyone would expect an
+    allocation race to take.
+    """
+    options = threaded_options(
+        block_size_bytes=256,
+        memtable_bytes_threshold=512,
+        level0_file_num_compaction_trigger=2,
+        l1_bytes_trigger=512,
+    )
+    engine = Engine.open(db_path(tmp_path), options)
+    gate = threading.Barrier(2)
+
+    def writer() -> None:
+        gate.wait(timeout=THREAD_TIMEOUT_SECONDS)
+        for index in range(300):
+            engine.put(key_for(index), value_for(index), WriteOptions(sync=False))
+
+    def compactor() -> None:
+        gate.wait(timeout=THREAD_TIMEOUT_SECONDS)
+        for _ in range(8):
+            engine.compact()
+
+    spawn([writer, compactor])
+
+    identifiers = [meta.file_id for level in engine.level_files for meta in level]
+    assert len(identifiers) == len(set(identifiers)), (
+        f"two tables were published under one file id: {sorted(identifiers)}"
+    )
+
+    # Reading every surviving table at its own offsets is exactly what a
+    # duplicate id breaks, and it is the check that fails loudly rather than
+    # returning plausible-looking wrong data.
+    observed = list(engine.scan())
+    assert observed, "the concurrent run left nothing readable"
+    for user_key, value in observed:
+        assert engine.get(user_key) == value
+    engine.close()
