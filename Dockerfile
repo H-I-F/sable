@@ -3,7 +3,7 @@
 # ============================ stage 1: build ============================ #
 # A wheel is built in isolation so that the runtime image contains neither
 # pip metadata, nor a compiler toolchain, nor this repository.
-FROM python:3.11-slim AS builder
+FROM python:3.15-slim AS builder
 
 WORKDIR /src
 
@@ -19,7 +19,7 @@ RUN python -m pip install --upgrade --no-cache-dir pip \
  && python -m pip install --no-cache-dir --no-deps --prefix=/install .
 
 # ============================ stage 2: runtime =========================== #
-FROM python:3.11-slim AS runtime
+FROM python:3.15-slim AS runtime
 
 LABEL org.opencontainers.image.title="sable" \
       org.opencontainers.image.description="Crash-safe pure-Python LSM-tree key-value storage engine" \
