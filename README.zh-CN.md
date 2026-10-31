@@ -374,6 +374,15 @@ python -m benchmarks.bench_engine --iters 20000 --value-bytes 256 --markdown
 
 以上均为单次运行的本机数据：比值是结论，绝对值只是一个快照。
 
+## 生态
+
+本引擎是被其他项目作为存储底座使用的。第一个下游项目是
+[**sable-vector**](https://github.com/MKA930/sable-vector)——一个把向量、payload
+与标量倒排条目存放进同一棵 `sable` 树的嵌入式混合检索向量引擎。
+
+下游开发中的问题会反向回流到这里：`0.1.1` 中的快照读一致性修复，就是 sable-vector
+并发读测试期间上报的成果。
+
 ## 许可证
 
 MIT —— 详见 [LICENSE](LICENSE)。
