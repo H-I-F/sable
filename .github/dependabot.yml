@@ -1,0 +1,43 @@
+version: 2
+
+updates:
+  # Runtime + dev deps live in pyproject.toml (PEP 621 + optional-dependencies).
+  # sable itself ships zero runtime dependencies, so this mostly tracks the
+  # test/lint/type toolchain.
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+      timezone: "Asia/Shanghai"
+    open-pull-requests-limit: 5
+    labels: ["dependencies"]
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
+    groups:
+      python-dev-toolchain:
+        dependency-type: "development"
+
+  # Only actions/checkout and actions/setup-python are pinned by tag today.
+  # Note: these floating tags must be replaced with full commit SHAs before the
+  # organization can turn on `sha_pinning_required`.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      timezone: "Asia/Shanghai"
+    labels: ["dependencies", "ci"]
+    commit-message:
+      prefix: "ci(actions)"
+
+  # Tracks the base image in Dockerfile (python:3.11-slim).
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      timezone: "Asia/Shanghai"
+    labels: ["dependencies", "docker"]
+    commit-message:
+      prefix: "chore(docker)"
