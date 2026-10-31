@@ -210,6 +210,38 @@ class MemTable:
             return None
         return candidate
 
+    def get_visible(
+        self, user_key: bytes, visible_sequence: int | None
+    ) -> InternalEntry | None:
+        """Return the newest version of ``user_key`` the view may resolve to.
+
+        A key may hold a newer, post-snapshot version beside an older one the
+        view is still entitled to. A bare ``get`` returns only the newest version
+        and would therefore hide the older visible one from a snapshot read,
+        leaving ``get`` and ``scan`` to disagree on what a pinned sequence number
+        resolves to. Walking the version run newest-first and stopping at the
+        first ``sequence <= visible_sequence`` returns the same entry a range
+        scan would, so the two read paths stay consistent.
+
+        Args:
+            user_key: Exact key to resolve.
+            visible_sequence: Upper sequence bound, or ``None`` for "latest wins".
+
+        Returns:
+            The highest-sequence entry at or below ``visible_sequence`` (tombstones
+            included), or ``None`` when the table has never seen ``user_key``.
+        """
+        with self._mutation:
+            node = self._descend_to(user_key)
+            while node is not None:
+                candidate = node.entry
+                if candidate.user_key != user_key:
+                    break
+                if visible_sequence is None or candidate.sequence <= visible_sequence:
+                    return candidate
+                node = node.next[0]
+        return None
+
     def iter_range(self, key_range: KeyRange | None = None) -> Iterator[InternalEntry]:
         """Yield every stored version inside ``key_range``, newest-first per key.
 
