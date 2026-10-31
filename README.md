@@ -1,6 +1,9 @@
-[English](README.md) | [简体中文](README.zh-CN.md)
+<p align="center">
+  <a href="./README.zh-CN.md"><img src="https://img.shields.io/badge/简体中文-docs-blue.svg" alt="简体中文文档"></a>
+  <a href="./README.md"><img src="https://img.shields.io/badge/English-docs-blue.svg" alt="English docs"></a>
+</p>
 
-# sable
+<h1 align="center">sable</h1>
 
 A crash-safe, pure-Python LSM-tree key-value storage engine reference
 implementation with WAL, binary SSTables, Bloom filters, and snapshot-safe
