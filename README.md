@@ -9,15 +9,16 @@ A crash-safe, pure-Python LSM-tree key-value storage engine reference
 implementation with WAL, binary SSTables, Bloom filters, and snapshot-safe
 compaction.
 
-[![CI](https://github.com/MKA930/sable/actions/workflows/ci.yml/badge.svg)](https://github.com/MKA930/sable/actions/workflows/ci.yml)
+[![H.I.F](https://img.shields.io/badge/H.I.F-Digital_Commons-black)](https://github.com/H-I-F)
+[![CI](https://github.com/H-I-F/sable/actions/workflows/ci.yml/badge.svg)](https://github.com/H-I-F/sable/actions/workflows/ci.yml)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%20%7C%203.11-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Dependencies](https://img.shields.io/badge/runtime%20deps-0-brightgreen.svg)](pyproject.toml)
 [![Docs](https://img.shields.io/badge/docs-knowledge%20base-blue.svg)](docs/README.md)
-[![Release](https://img.shields.io/github/v/release/MKA930/sable)](https://github.com/MKA930/sable/releases)
+[![Release](https://img.shields.io/github/v/release/H-I-F/sable)](https://github.com/H-I-F/sable/releases)
 [![Coverage](coverage.svg)](coverage.svg)
-[![Contributors](https://img.shields.io/github/contributors/MKA930/sable)](https://github.com/MKA930/sable/contributors)
-[![Commit Activity](https://img.shields.io/github/commit-activity/m/MKA930/sable)](https://github.com/MKA930/sable/commits/main)
+[![Contributors](https://img.shields.io/github/contributors/H-I-F/sable)](https://github.com/H-I-F/sable/contributors)
+[![Commit Activity](https://img.shields.io/github/commit-activity/m/H-I-F/sable)](https://github.com/H-I-F/sable/commits/main)
 
 `sable` is a complete single-node storage engine in **2,000 lines of pure Python
 logic** (3,492 lines counting the docstrings that explain every layout): a
@@ -410,7 +411,7 @@ absolute figures as a snapshot.
 ## Ecosystem
 
 This engine is the storage layer other projects build on. The first downstream
-consumer is [**sable-vector**](https://github.com/MKA930/sable-vector), an
+consumer is [**sable-vector**](https://github.com/H-I-F/sable-vector), an
 embedded hybrid vector search engine that keeps vectors, payloads and scalar
 inverted entries in one `sable` tree.
 

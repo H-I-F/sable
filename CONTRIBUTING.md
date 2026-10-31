@@ -23,7 +23,7 @@ will hold you to.
 Python 3.10 or newer. Nothing else is required at runtime.
 
 ```bash
-git clone https://github.com/MKA930/sable.git
+git clone https://github.com/H-I-F/sable.git
 cd sable
 python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
