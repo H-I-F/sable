@@ -1,6 +1,9 @@
-[English](README.md) | [简体中文](README.zh-CN.md)
+<p align="center">
+  <a href="./README.md"><img src="https://img.shields.io/badge/English-docs-blue.svg" alt="English docs"></a>
+  <a href="./README.zh-CN.md"><img src="https://img.shields.io/badge/简体中文-docs-blue.svg" alt="简体中文文档"></a>
+</p>
 
-# sable
+<h1 align="center">sable</h1>
 
 一个崩溃安全（Crash-Safe）的纯 Python LSM-Tree 键值存储引擎参考实现，内置 WAL、
 二进制 SSTable、Bloom Filter 与快照安全的 Compaction。
