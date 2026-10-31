@@ -404,6 +404,16 @@ reads vs. a live compactor) and
 Numbers from one run on one machine; treat the ratios as the result and the
 absolute figures as a snapshot.
 
+## Ecosystem
+
+This engine is the storage layer other projects build on. The first downstream
+consumer is [**sable-vector**](https://github.com/MKA930/sable-vector), an
+embedded hybrid vector search engine that keeps vectors, payloads and scalar
+inverted entries in one `sable` tree.
+
+Problems surfaced from that work feed back here: the snapshot-read consistency
+correction in `0.1.1` was reported during sable-vector's concurrent-read testing.
+
 ## License
 
 MIT — see [LICENSE](LICENSE).

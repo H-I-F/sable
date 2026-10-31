@@ -27,6 +27,8 @@ memtable.
 - **`Engine.open_snapshots`** exposes the count of unreleased views, so a caller
   can assert that a snapshot acquire/release pair netted to zero without reaching
   into engine internals.
+- Fixed a concurrency issue discovered during the development of downstream
+  project sable-vector.
 
 ## [0.1.0] - 2026-10-30
 
