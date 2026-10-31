@@ -442,3 +442,42 @@ def test_internal_lookup_reveals_tombstone_not_absence(tmp_path: Path) -> None:
     assert found.is_tombstone is True
     assert engine.get(b"ghost") is None
     engine.close()
+
+
+def test_snapshot_point_lookup_resolves_newest_visible_version_in_memtable(tmp_path: Path) -> None:
+    """A pinned view must see the newest version at or below its sequence.
+
+    When a key holds a newer, post-snapshot version beside an older one still
+    visible to the view, a point lookup and a range scan must agree on what the
+    pinned sequence resolves to. Both versions staying in the active memtable
+    (no flush between them) is the case the scan path handled but the point
+    path did not: ``get`` returned the newest version and, finding it invisible,
+    reported absence instead of falling back to the older visible one.
+
+    Regression guard for the memtable visibility fix.
+    """
+    engine = small_engine(tmp_path)
+    engine.put(b"K", b"A")
+    engine.put(b"_pad", b"x")  # advance the sequence past K's first write
+    view = engine.snapshot()    # pinned at the sequence before K is overwritten
+    engine.put(b"K", b"B")      # overwrite K at a higher sequence, still in memtable
+
+    assert view.get(b"K") == b"A"
+    assert list(view.scan(b"K", b"L")) == [(b"K", b"A")]
+    view.release()
+    engine.close()
+
+
+def test_open_snapshots_counts_acquire_and_release(tmp_path: Path) -> None:
+    """The public snapshot count lets a caller prove acquire/release balanced."""
+    engine = small_engine(tmp_path)
+    base = engine.open_snapshots
+
+    view = engine.snapshot()
+    assert engine.open_snapshots == base + 1
+
+    view.release()
+    assert engine.open_snapshots == base
+    view.release()  # release is idempotent, so a stacked finally is safe
+    assert engine.open_snapshots == base
+    engine.close()

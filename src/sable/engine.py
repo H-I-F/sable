@@ -325,6 +325,18 @@ class Engine:
         with self._lock:
             return tuple(sorted(view.sequence for view in self._snapshots))
 
+    @property
+    def open_snapshots(self) -> int:
+        """Number of unreleased views, so callers can assert acquire/release balance.
+
+        A snapshot is a resource: it must be released, directly or via its context
+        manager, or the tree can never converge. Exposing the live count lets a
+        caller prove that an acquire/release pair netted to zero without reaching
+        into the engine's internal list.
+        """
+        with self._lock:
+            return len(self._snapshots)
+
     def scan(
         self,
         start: bytes | None = None,
@@ -450,8 +462,12 @@ class Engine:
         """
         with self._lease_view() as (tables, metas):
             for table in tables:
-                found = table.get(user_key)
-                if found is not None and _is_visible(found, visible_sequence):
+                # Reads under a snapshot must resolve to the newest *visible*
+                # version of a key, not merely its newest version: a key can hold
+                # a newer, post-snapshot version beside an older one the view is
+                # still entitled to, and a bare ``get`` would hide it.
+                found = table.get_visible(user_key, visible_sequence)
+                if found is not None:
                     return found
 
             for meta in metas:
