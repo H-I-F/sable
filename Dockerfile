@@ -23,9 +23,9 @@ FROM python:3.11-slim AS runtime
 
 LABEL org.opencontainers.image.title="sable" \
       org.opencontainers.image.description="Crash-safe pure-Python LSM-tree key-value storage engine" \
-      org.opencontainers.image.source="https://github.com/MKA930/sable" \
+      org.opencontainers.image.source="https://github.com/H-I-F/sable" \
       org.opencontainers.image.licenses="MIT" \
-      org.opencontainers.image.vendor="MKA930"
+      org.opencontainers.image.vendor="H.I.F"
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \

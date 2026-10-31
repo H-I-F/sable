@@ -7,6 +7,21 @@ rather than letting developers discover it at recovery time.
 
 Format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Changed
+
+- **Repository ownership moved to the [H.I.F](https://github.com/H-I-F)
+  organization.** The canonical location is now `https://github.com/H-I-F/sable`;
+  the former `MKA930/sable` path continues to resolve because GitHub redirects
+  transferred repositories. Every URL in the documentation, packaging metadata and
+  container labels was repointed, and the historical issue/PR references in
+  `PROGRESS.md` now resolve under the new owner. Author metadata is unchanged.
+
+  This is a governance move, not a release: no code, no storage layout and no
+  version number changed, so existing installs and existing databases are
+  unaffected.
+
 ## [0.1.1] - 2026-10-30
 
 A correctness fix for snapshot reads that a pinned view performs after a key has
@@ -134,4 +149,4 @@ decision stated as a filesystem invariant.
   functions are unchanged — `inspect_wal` still returns `[]` for a missing file,
   which is what segment iteration needs.
 
-[0.1.0]: https://github.com/MKA930/sable/releases/tag/v0.1.0
+[0.1.0]: https://github.com/H-I-F/sable/releases/tag/v0.1.0

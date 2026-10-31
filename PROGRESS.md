@@ -62,14 +62,14 @@ PR-scoped acceptance command passes locally **and** the PR is merged.
 | 清理 19 个远端 / 19 个本地特性分支（`git cherry` 未合并补丁数为 0），并开启 `delete_branch_on_merge` | 合并后执行 |
 | 仓库治理：补 topics，为 `main` 开启分支保护（要求 PR + CI 通过） | 合并后执行 |
 
-[#23]: https://github.com/MKA930/sable/pull/23
-[#24]: https://github.com/MKA930/sable/pull/24
-[#25]: https://github.com/MKA930/sable/pull/25
-[#26]: https://github.com/MKA930/sable/pull/26
-[#27]: https://github.com/MKA930/sable/pull/27
-[#28]: https://github.com/MKA930/sable/pull/28
-[#29]: https://github.com/MKA930/sable/pull/29
-[#30]: https://github.com/MKA930/sable/pull/30
-[#31]: https://github.com/MKA930/sable/pull/31
-[#32]: https://github.com/MKA930/sable/pull/32
-[#33]: https://github.com/MKA930/sable/pull/33
+[#23]: https://github.com/H-I-F/sable/pull/23
+[#24]: https://github.com/H-I-F/sable/pull/24
+[#25]: https://github.com/H-I-F/sable/pull/25
+[#26]: https://github.com/H-I-F/sable/pull/26
+[#27]: https://github.com/H-I-F/sable/pull/27
+[#28]: https://github.com/H-I-F/sable/pull/28
+[#29]: https://github.com/H-I-F/sable/pull/29
+[#30]: https://github.com/H-I-F/sable/pull/30
+[#31]: https://github.com/H-I-F/sable/pull/31
+[#32]: https://github.com/H-I-F/sable/pull/32
+[#33]: https://github.com/H-I-F/sable/pull/33

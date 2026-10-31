@@ -8,15 +8,16 @@
 一个崩溃安全（Crash-Safe）的纯 Python LSM-Tree 键值存储引擎参考实现，内置 WAL、
 二进制 SSTable、Bloom Filter 与快照安全的 Compaction。
 
-[![CI](https://github.com/MKA930/sable/actions/workflows/ci.yml/badge.svg)](https://github.com/MKA930/sable/actions/workflows/ci.yml)
+[![H.I.F](https://img.shields.io/badge/H.I.F-Digital_Commons-black)](https://github.com/H-I-F)
+[![CI](https://github.com/H-I-F/sable/actions/workflows/ci.yml/badge.svg)](https://github.com/H-I-F/sable/actions/workflows/ci.yml)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%20%7C%203.11-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Dependencies](https://img.shields.io/badge/runtime%20deps-0-brightgreen.svg)](pyproject.toml)
 [![Docs](https://img.shields.io/badge/docs-knowledge%20base-blue.svg)](docs/README.zh-CN.md)
-[![Release](https://img.shields.io/github/v/release/MKA930/sable)](https://github.com/MKA930/sable/releases)
+[![Release](https://img.shields.io/github/v/release/H-I-F/sable)](https://github.com/H-I-F/sable/releases)
 [![Coverage](coverage.svg)](coverage.svg)
-[![Contributors](https://img.shields.io/github/contributors/MKA930/sable)](https://github.com/MKA930/sable/contributors)
-[![Commit Activity](https://img.shields.io/github/commit-activity/m/MKA930/sable)](https://github.com/MKA930/sable/commits/main)
+[![Contributors](https://img.shields.io/github/contributors/H-I-F/sable)](https://github.com/H-I-F/sable/contributors)
+[![Commit Activity](https://img.shields.io/github/commit-activity/m/H-I-F/sable)](https://github.com/H-I-F/sable/commits/main)
 
 `sable` 用 **2,000 行纯 Python 逻辑**（含解释每种布局的 docstring 共 3,492 行）
 实现了一个完整的单机存储引擎：顺序写的预写日志、跳表 MemTable、带块级校验和与
@@ -380,7 +381,7 @@ python -m benchmarks.bench_engine --iters 20000 --value-bytes 256 --markdown
 ## 生态
 
 本引擎是被其他项目作为存储底座使用的。第一个下游项目是
-[**sable-vector**](https://github.com/MKA930/sable-vector)——一个把向量、payload
+[**sable-vector**](https://github.com/H-I-F/sable-vector)——一个把向量、payload
 与标量倒排条目存放进同一棵 `sable` 树的嵌入式混合检索向量引擎。
 
 下游开发中的问题会反向回流到这里：`0.1.1` 中的快照读一致性修复，就是 sable-vector
