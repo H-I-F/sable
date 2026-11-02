@@ -9,6 +9,15 @@ Format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- **Deterministic PR review report.** Every pull request now receives one sticky
+  comment with a change map, live CI gate status and repo-specific rigor notes
+  (snapshot/WAL recovery semantics, `requires-python` vs CI matrix vs image
+  base, branch-protection sync). It also applies `area/`, `size/` and `risk/`
+  labels. Advisory only: it never merges, closes or approves. No model inference,
+  no external service, no running cost.
+
 ### Changed
 
 - **Repository ownership moved to the [H.I.F](https://github.com/H-I-F)
