@@ -59,7 +59,7 @@ $ sable stats --json | head -20
 | 知识库入口 | 内容 |
 | --- | --- |
 | [工程实践 Skills](docs/README.zh-CN.md#工程实践-skills底层实现指南) | WAL/截断恢复、原子落盘、并发控制——每篇都锚定源码 |
-| [硬核问答 FAQ（中文）](docs/faq/interview-qa-zh.md) | 八个存储系统追问，配 Mermaid 图解 |
+| [硬核问答 FAQ（中文）](docs/faq/deep-dive-qa-zh.md) | 八个存储系统追问，配 Mermaid 图解 |
 | [ADR-001 … ADR-005](docs/README.zh-CN.md#架构决策记录-adr) | 每个磁盘/内存契约背后的决策 |
 | [基准测试](docs/README.zh-CN.md#基准测试-benchmarks) | 并发压测、WAL 吞吐上限、读放大矩阵 |
 | [实测报告](docs/reports/benchmark-2024.md) | 这个引擎在一台具名机器上到底跑到多少，以及这些数字**不**覆盖什么 |

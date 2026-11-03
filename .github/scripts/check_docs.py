@@ -75,7 +75,7 @@ def counterpart(rel: str) -> str:
     """Expected path of the same page in the other language.
 
     Two naming conventions are in use: ``NAME.md`` / ``NAME.zh-CN.md``, and
-    for the interview FAQ ``NAME-en.md`` / ``NAME-zh.md``.
+    for the deep-dive FAQ ``NAME-en.md`` / ``NAME-zh.md``.
     """
     if rel.endswith(".zh-CN.md"):
         return rel[: -len(".zh-CN.md")] + ".md"

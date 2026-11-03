@@ -14,7 +14,7 @@
 | 板块 | 面向 | 形式 |
 | --- | --- | --- |
 | [工程实践 Skills](#工程实践-skills底层实现指南) | 实现或移植该引擎的工程师 | 带代码与表格的叙事指南 |
-| [硬核问答 FAQ](#硬核问答-faq存储系统深度追问) | 面试、设计评审、「为什么不干脆…」式反问 | 双语 Q&A + Mermaid 图 |
+| [硬核问答 FAQ](#硬核问答-faq存储系统深度追问) | 深度追问、设计评审、「为什么不干脆…」式反问 | 双语 Q&A + Mermaid 图 |
 | [架构决策记录 ADR](#架构决策记录-adr) | 任何要改动磁盘/内存契约的人 | ADR-001 … ADR-005 |
 | [基准测试 Benchmarks](#基准测试-benchmarks) | 性能调优、回归排查 | 可运行压测脚本 |
 | [实测报告 Reports](#实测报告-reports) | 容量规划、「放大到 10 倍还撑得住吗」 | 具名机器上的实测运行 |
@@ -57,8 +57,8 @@
 双语、锚定代码、配图解析。八个问题覆盖 WAL/恢复、原子落盘、并发/Compaction、墓碑/
 MemTable 快照、Bloom Filter，每篇内含四张 Mermaid 图。
 
-- English: [Storage Engine Deep-Dive Q&A](faq/interview-qa-en.md)
-- 简体中文: [存储引擎硬核追问与深度解答](faq/interview-qa-zh.md)
+- English: [Storage Engine Deep-Dive Q&A](faq/deep-dive-qa-en.md)
+- 简体中文: [存储引擎硬核追问与深度解答](faq/deep-dive-qa-zh.md)
 
 ## 架构决策记录 ADR
 
@@ -139,7 +139,7 @@ MemTable 快照、Bloom Filter，每篇内含四张 Mermaid 图。
 3. [Skills → 并发控制](skills/concurrency-control.md) — 这是大多数 LSM 实现都会写错的地方。
 4. [ADR-001](decisions/adr-001-wal-frame-crc32.md) 到
    [ADR-005](decisions/adr-005-sparse-index-layout.md) — 你即将触碰的契约背后的推理。
-5. [FAQ（中文）](faq/interview-qa-zh.md) — 「为什么不干脆…」式的反问，这里已经预先回答。
+5. [FAQ（中文）](faq/deep-dive-qa-zh.md) — 「为什么不干脆…」式的反问，这里已经预先回答。
 
 ---
 

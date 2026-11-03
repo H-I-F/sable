@@ -15,7 +15,7 @@
 | Section | For | Format |
 | --- | --- | --- |
 | [Skills](#skills-low-level-implementation-practice) | engineers implementing or porting the engine | narrative guides with code and tables |
-| [FAQ](#faq-hard-storage-system-questions) | interviews, design reviews, "why not just…" pushback | bilingual Q&A with Mermaid diagrams |
+| [FAQ](#faq-hard-storage-system-questions) | deep-dive questions, design reviews, "why not just…" pushback | bilingual Q&A with Mermaid diagrams |
 | [Architecture Decision Records](#architecture-decision-records) | anyone changing the on-disk or in-memory contracts | ADR-001 … ADR-005 |
 | [Benchmarks](#benchmarks) | performance work, regression hunting | runnable harnesses |
 | [Reports](#reports-measured-numbers) | capacity planning, "will this hold at 10x" | measured runs on a named host |
@@ -62,8 +62,8 @@ Bilingual, code-anchored, diagram-backed. Eight questions spanning WAL/recovery,
 atomic publish, concurrency/compaction, tombstones/memtable snapshots, and Bloom
 filters — four Mermaid diagrams in each file.
 
-- English: [Storage Engine Deep-Dive Q&A](faq/interview-qa-en.md)
-- 简体中文: [存储引擎硬核追问与深度解答](faq/interview-qa-zh.md)
+- English: [Storage Engine Deep-Dive Q&A](faq/deep-dive-qa-en.md)
+- 简体中文: [存储引擎硬核追问与深度解答](faq/deep-dive-qa-zh.md)
 
 ## Architecture Decision Records
 
@@ -154,7 +154,7 @@ A suggested reading order for someone dropped into the codebase cold:
 4. [ADR-001](decisions/adr-001-wal-frame-crc32.md) through
    [ADR-005](decisions/adr-005-sparse-index-layout.md) — the reasoning behind the
    contracts you are about to touch.
-5. [FAQ (en)](faq/interview-qa-en.md) — the "why not just…" pushback, pre-answered.
+5. [FAQ (en)](faq/deep-dive-qa-en.md) — the "why not just…" pushback, pre-answered.
 
 ---
 
