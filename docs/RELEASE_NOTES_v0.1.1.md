@@ -2,8 +2,6 @@
 
 # sable v0.1.1
 
-# sable v0.1.1
-
 A correctness fix for snapshot reads that a pinned view performs after a key has been overwritten while the older and newer versions still coexist in the active memtable.
 
 ## Fixed

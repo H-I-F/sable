@@ -35,6 +35,8 @@
   完整的 LSM 树、崩溃矩阵、检查器与知识库。
 - [v0.1.1](RELEASE_NOTES_v0.1.1.zh-CN.md) / [English](RELEASE_NOTES_v0.1.1.md) —— 快照读正确性
   修复与 `Engine.open_snapshots`。
+- [v0.1.2](RELEASE_NOTES_v0.1.2.zh-CN.md) / [English](RELEASE_NOTES_v0.1.2.md) —— 补齐中英双语
+  工程笔记，引擎没有改动。
 
 ## 工程实践 Skills（底层实现指南）
 

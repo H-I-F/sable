@@ -25,6 +25,32 @@ API，这一点在这里写明，而不是让开发者在恢复数据时才撞�
 
   这是一次治理动作，不是发版：代码、存储布局、版本号都没动，已有安装和已有数据库不受影响。
 
+## [0.1.2] - 2026-11-03
+
+一次文档发版。工程笔记现在中英双语齐备，每篇长文都能从双语索引直达。存储布局、磁盘格式、
+公开 API、依赖版本和运行时行为都没变：0.1.1 写出来的数据库，用 0.1.2 打开不需要任何迁移。
+
+### 新增
+
+- **双语工程笔记索引** —— `docs/README.md` 与 `docs/README.zh-CN.md`，含板块表、源码地图和
+  覆盖仓库内每篇文档的推荐阅读顺序。
+- **既有长文的中文版** —— `CHANGELOG`、`CONTRIBUTING`、`SECURITY`、五篇架构决策记录、
+  `docs/recipes/ttl-eviction.md`、`docs/reports/benchmark-2024.md` 和三篇 `docs/skills/` 指南，
+  现在都各有英文 `.md` 与中文 `.zh-CN.md`。
+- **发版公告与案例复盘** —— `docs/RELEASE_NOTES_v0.1.0.md`、
+  `docs/RELEASE_NOTES_v0.1.1.md`、`docs/case-studies/snapshot-read-consistency.md`，均为双语。
+  案例复盘从上游视角记录 v0.1.1 的快照读修复，并链到下游那份记录。
+- **`PROGRESS.zh-CN.md`** —— 演进台账拆成干净的英文 `PROGRESS.md` 与中文版，两者都保留同样的
+  32 条 PR 条目和链接定义。
+- **两份 README 的双语入口** —— 文档与治理清单里每条都成对给出 English 与简体中文，另加指向
+  下游案例复盘的链接和 Downstream 徽章。
+
+### 变更
+
+- `pyproject.toml` 与 `sable.__version__` 的版本从 `0.1.1` 提到 `0.1.2`，让包报告的版本号与
+  打 tag 的那次构建一致。
+- `docs/RELEASE_NOTES_v0.1.1.md` 的标题重复打了两遍，删掉多余的一行。
+
 ## [0.1.1] - 2026-10-30
 
 针对快照读的正确性修复：某个键被覆盖、而新旧版本仍同时存在于活跃 memtable 时，被钉住的视图
@@ -115,4 +141,7 @@ API，这一点在这里写明，而不是让开发者在恢复数据时才撞�
   「段没了」。现在两者都以退出码 2 在 stderr 给一行原因，SSTable CLI 也把外来或损坏文件走同一条
   路径。库函数不变——`inspect_wal` 对缺失文件仍返回 `[]`，这是段遍历需要的语义。
 
+[未发布]: https://github.com/H-I-F/sable/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/H-I-F/sable/releases/tag/v0.1.2
+[0.1.1]: https://github.com/H-I-F/sable/releases/tag/v0.1.1
 [0.1.0]: https://github.com/H-I-F/sable/releases/tag/v0.1.0

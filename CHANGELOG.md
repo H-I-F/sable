@@ -31,6 +31,41 @@ Format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   version number changed, so existing installs and existing databases are
   unaffected.
 
+## [0.1.2] - 2026-11-03
+
+A documentation release. The engineering notes are now complete in both English
+and 简体中文, and every long-form page is reachable from a bilingual index. No
+storage layout, on-disk format, public API, dependency version or runtime
+behaviour changed: a database written by 0.1.1 opens unchanged under 0.1.2.
+
+### Added
+
+- **Bilingual engineering-notes indexes** — `docs/README.md` and
+  `docs/README.zh-CN.md`, with a section table, a source map and a suggested
+  reading order covering every page in the repository.
+- **Chinese editions of the existing long-form notes** — `CHANGELOG`,
+  `CONTRIBUTING`, `SECURITY`, the five architecture decision records,
+  `docs/recipes/ttl-eviction.md`, `docs/reports/benchmark-2024.md` and the three
+  `docs/skills/` guides now each have an English `.md` and a `.zh-CN.md`.
+- **Release notes and a case study** — `docs/RELEASE_NOTES_v0.1.0.md`,
+  `docs/RELEASE_NOTES_v0.1.1.md` and
+  `docs/case-studies/snapshot-read-consistency.md`, in both languages. The case
+  study records the v0.1.1 snapshot-read fix from the upstream side and links to
+  the downstream write-up.
+- **`PROGRESS.zh-CN.md`** — the evolution ledger is now a clean English
+  `PROGRESS.md` and a Chinese companion; both carry the same 32 PR entries and
+  the same link definitions.
+- **Bilingual wiring in the READMEs** — documentation and governance lists that
+  pair English and 简体中文 for every entry, plus links to the downstream case
+  study and a Downstream badge.
+
+### Changed
+
+- Version `0.1.1` → `0.1.2` in `pyproject.toml` and `sable.__version__`, so the
+  package reports the tag it was built from.
+- `docs/RELEASE_NOTES_v0.1.1.md` had its title printed twice; the duplicate line
+  is gone.
+
 ## [0.1.1] - 2026-10-30
 
 A correctness fix for snapshot reads that a pinned view performs after a key has
@@ -158,4 +193,7 @@ decision stated as a filesystem invariant.
   functions are unchanged — `inspect_wal` still returns `[]` for a missing file,
   which is what segment iteration needs.
 
+[Unreleased]: https://github.com/H-I-F/sable/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/H-I-F/sable/releases/tag/v0.1.2
+[0.1.1]: https://github.com/H-I-F/sable/releases/tag/v0.1.1
 [0.1.0]: https://github.com/H-I-F/sable/releases/tag/v0.1.0
