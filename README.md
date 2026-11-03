@@ -430,7 +430,7 @@ and both releases have [announcements](docs/RELEASE_NOTES_v0.1.1.md) in this rep
 - Contributor guide: [CONTRIBUTING.md](CONTRIBUTING.md) · [简体中文](CONTRIBUTING.zh-CN.md)
 - Security policy: [SECURITY.md](SECURITY.md) · [简体中文](SECURITY.zh-CN.md)
 - Release history: [CHANGELOG.md](CHANGELOG.md) · [简体中文](CHANGELOG.zh-CN.md)
-- Evolution ledger (one tick per PR): [PROGRESS.md](PROGRESS.md)
+- Evolution ledger (one tick per PR): [PROGRESS.md](PROGRESS.md) · [简体中文](PROGRESS.zh-CN.md)
 - Release notes: [v0.1.0](docs/RELEASE_NOTES_v0.1.0.md) · [v0.1.1](docs/RELEASE_NOTES_v0.1.1.md)
 - Case study — the snapshot-read consistency fix: [docs/case-studies/snapshot-read-consistency.md](docs/case-studies/snapshot-read-consistency.md)
 
