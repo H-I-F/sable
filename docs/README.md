@@ -37,6 +37,8 @@
   release: the complete LSM tree, the crash matrix, the inspectors and the knowledge base.
 - [v0.1.1](RELEASE_NOTES_v0.1.1.md) / [简体中文](RELEASE_NOTES_v0.1.1.zh-CN.md) — the snapshot-read
   correctness fix and `Engine.open_snapshots`.
+- [v0.1.2](RELEASE_NOTES_v0.1.2.md) / [简体中文](RELEASE_NOTES_v0.1.2.zh-CN.md) — the bilingual
+  engineering-notes set; no engine changes.
 
 ## Skills: low-level implementation practice
 

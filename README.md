@@ -420,7 +420,7 @@ Problems surfaced from that work feed back here: the
 [snapshot-read consistency correction](docs/case-studies/snapshot-read-consistency.md) in `0.1.1`
 was reported during sable-vector's concurrent-read testing. The same investigation is written up from
 the downstream side [there](https://github.com/H-I-F/sable-vector/blob/main/docs/case-studies/cross-layer-bugfix.md),
-and both releases have [announcements](docs/RELEASE_NOTES_v0.1.1.md) in this repository.
+and each release carries an [announcement](docs/RELEASE_NOTES_v0.1.1.md) in this repository.
 
 ## Documentation & governance
 
@@ -431,7 +431,7 @@ and both releases have [announcements](docs/RELEASE_NOTES_v0.1.1.md) in this rep
 - Security policy: [SECURITY.md](SECURITY.md) · [简体中文](SECURITY.zh-CN.md)
 - Release history: [CHANGELOG.md](CHANGELOG.md) · [简体中文](CHANGELOG.zh-CN.md)
 - Evolution ledger (one tick per PR): [PROGRESS.md](PROGRESS.md) · [简体中文](PROGRESS.zh-CN.md)
-- Release notes: [v0.1.0](docs/RELEASE_NOTES_v0.1.0.md) · [v0.1.1](docs/RELEASE_NOTES_v0.1.1.md)
+- Release notes: [v0.1.0](docs/RELEASE_NOTES_v0.1.0.md) · [v0.1.1](docs/RELEASE_NOTES_v0.1.1.md) · [v0.1.2](docs/RELEASE_NOTES_v0.1.2.md)
 - Case study — the snapshot-read consistency fix: [docs/case-studies/snapshot-read-consistency.md](docs/case-studies/snapshot-read-consistency.md)
 
 ## License

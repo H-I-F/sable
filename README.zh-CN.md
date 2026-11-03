@@ -388,7 +388,7 @@ python -m benchmarks.bench_engine --iters 20000 --value-bytes 256 --markdown
 下游开发中的问题会反向回流到这里：`0.1.1` 中的
 [快照读一致性修复](docs/case-studies/snapshot-read-consistency.zh-CN.md)，就是 sable-vector
 并发读测试期间上报的成果。同一次排查在下游也[有一份记录](https://github.com/H-I-F/sable-vector/blob/main/docs/case-studies/cross-layer-bugfix.zh-CN.md)，
-两个版本在本仓库都[有发版公告](docs/RELEASE_NOTES_v0.1.1.zh-CN.md)。
+每个版本在本仓库都[有发版公告](docs/RELEASE_NOTES_v0.1.1.zh-CN.md)。
 
 ## 文档与治理
 
@@ -399,7 +399,7 @@ python -m benchmarks.bench_engine --iters 20000 --value-bytes 256 --markdown
 - 安全策略：[SECURITY.md](SECURITY.md) · [简体中文](SECURITY.zh-CN.md)
 - 发布历史：[CHANGELOG.md](CHANGELOG.md) · [简体中文](CHANGELOG.zh-CN.md)
 - 演进台账（每个 PR 一个勾）：[PROGRESS.md](PROGRESS.md) · [简体中文](PROGRESS.zh-CN.md)
-- 发版公告：[v0.1.0](docs/RELEASE_NOTES_v0.1.0.zh-CN.md) · [v0.1.1](docs/RELEASE_NOTES_v0.1.1.zh-CN.md)
+- 发版公告：[v0.1.0](docs/RELEASE_NOTES_v0.1.0.zh-CN.md) · [v0.1.1](docs/RELEASE_NOTES_v0.1.1.zh-CN.md) · [v0.1.2](docs/RELEASE_NOTES_v0.1.2.zh-CN.md)
 - 案例复盘——快照读一致性修复：[docs/case-studies/snapshot-read-consistency.zh-CN.md](docs/case-studies/snapshot-read-consistency.zh-CN.md)
 
 ## 许可证
