@@ -14,6 +14,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Dependencies](https://img.shields.io/badge/runtime%20deps-0-brightgreen.svg)](pyproject.toml)
 [![Docs](https://img.shields.io/badge/docs-knowledge%20base-blue.svg)](docs/README.zh-CN.md)
+[![Downstream](https://img.shields.io/badge/used%20by-sable--vector-8A2BE2.svg)](https://github.com/H-I-F/sable-vector)
 [![Release](https://img.shields.io/github/v/release/H-I-F/sable)](https://github.com/H-I-F/sable/releases)
 [![Coverage](coverage.svg)](coverage.svg)
 [![Contributors](https://img.shields.io/github/contributors/H-I-F/sable)](https://github.com/H-I-F/sable/contributors)
@@ -384,8 +385,22 @@ python -m benchmarks.bench_engine --iters 20000 --value-bytes 256 --markdown
 [**sable-vector**](https://github.com/H-I-F/sable-vector)——一个把向量、payload
 与标量倒排条目存放进同一棵 `sable` 树的嵌入式混合检索向量引擎。
 
-下游开发中的问题会反向回流到这里：`0.1.1` 中的快照读一致性修复，就是 sable-vector
-并发读测试期间上报的成果。
+下游开发中的问题会反向回流到这里：`0.1.1` 中的
+[快照读一致性修复](docs/case-studies/snapshot-read-consistency.zh-CN.md)，就是 sable-vector
+并发读测试期间上报的成果。同一次排查在下游也[有一份记录](https://github.com/H-I-F/sable-vector/blob/main/docs/case-studies/cross-layer-bugfix.zh-CN.md)，
+两个版本在本仓库都[有发版公告](docs/RELEASE_NOTES_v0.1.1.zh-CN.md)。
+
+## 文档与治理
+
+- 架构与用法：本中文文档与 [English](README.md)
+- 工程知识库：[docs/README.md](docs/README.md) · [简体中文](docs/README.zh-CN.md)
+- 架构决策记录：[ADR-001 … ADR-005](docs/README.zh-CN.md#架构决策记录-adr)
+- 贡献指南：[CONTRIBUTING.md](CONTRIBUTING.md) · [简体中文](CONTRIBUTING.zh-CN.md)
+- 安全策略：[SECURITY.md](SECURITY.md) · [简体中文](SECURITY.zh-CN.md)
+- 发布历史：[CHANGELOG.md](CHANGELOG.md) · [简体中文](CHANGELOG.zh-CN.md)
+- 演进台账（每个 PR 一个勾）：[PROGRESS.md](PROGRESS.md)
+- 发版公告：[v0.1.0](docs/RELEASE_NOTES_v0.1.0.zh-CN.md) · [v0.1.1](docs/RELEASE_NOTES_v0.1.1.zh-CN.md)
+- 案例复盘——快照读一致性修复：[docs/case-studies/snapshot-read-consistency.zh-CN.md](docs/case-studies/snapshot-read-consistency.zh-CN.md)
 
 ## 许可证
 
