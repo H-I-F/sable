@@ -3,8 +3,8 @@
 **Engine:** sable 0.1.0 · **Date:** 2026-10-30 · **Host:** AMD EPYC 9K65, 32 vCPU,
 Linux 6.6.117 (container, overlayfs) · **Python:** 3.11.1 (CPython, GIL enabled)
 
-*Published as `benchmark-2024.md`; every measurement below is from the 2026-10-30
-pre-release run on the host described above.*
+*Every measurement below comes from the pre-release run on the host described
+above.*
 
 > Every figure in this report was produced by a script committed under
 > `benchmarks/`, on this host, on the day of writing. Nothing is imported from

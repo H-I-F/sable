@@ -31,11 +31,11 @@
 
 ## 发版公告
 
-- [v0.1.0](RELEASE_NOTES_v0.1.0.zh-CN.md) / [English](RELEASE_NOTES_v0.1.0.md) —— 第一个完整版本：
+- [v0.1.0](release-notes-v0.1.0.zh-CN.md) / [English](release-notes-v0.1.0.md) —— 第一个完整版本：
   完整的 LSM 树、崩溃矩阵、检查器与知识库。
-- [v0.1.1](RELEASE_NOTES_v0.1.1.zh-CN.md) / [English](RELEASE_NOTES_v0.1.1.md) —— 快照读正确性
+- [v0.1.1](release-notes-v0.1.1.zh-CN.md) / [English](release-notes-v0.1.1.md) —— 快照读正确性
   修复与 `Engine.open_snapshots`。
-- [v0.1.2](RELEASE_NOTES_v0.1.2.zh-CN.md) / [English](RELEASE_NOTES_v0.1.2.md) —— 补齐中英双语
+- [v0.1.2](release-notes-v0.1.2.zh-CN.md) / [English](release-notes-v0.1.2.md) —— 补齐中英双语
   工程笔记，引擎没有改动。
 
 ## 工程实践 Skills（底层实现指南）
@@ -57,8 +57,8 @@
 双语、锚定代码、配图解析。八个问题覆盖 WAL/恢复、原子落盘、并发/Compaction、墓碑/
 MemTable 快照、Bloom Filter，每篇内含四张 Mermaid 图。
 
-- English: [Storage Engine Deep-Dive Q&A](faq/deep-dive-qa-en.md)
-- 简体中文: [存储引擎硬核追问与深度解答](faq/deep-dive-qa-zh.md)
+- English: [Storage Engine Deep-Dive Q&A](faq/deep-dive-qa.md)
+- 简体中文: [存储引擎硬核追问与深度解答](faq/deep-dive-qa.zh-CN.md)
 
 ## 架构决策记录 ADR
 
@@ -97,7 +97,7 @@ MemTable 快照、Bloom Filter，每篇内含四张 Mermaid 图。
 
 压测负责测量；报告负责给出**对数字的解读**，连同采集它的机器、以及它刻意不覆盖的部分。
 
-- [预发版性能基准报告](reports/benchmark-2024.zh-CN.md) / [English](reports/benchmark-2024.md) — 写路径（持久化 `198–219 rec/s`，关闭
+- [预发版性能基准报告](reports/benchmark.zh-CN.md) / [English](reports/benchmark.md) — 写路径（持久化 `198–219 rec/s`，关闭
   `fsync` 为 `102,398–117,160 rec/s`）、读路径（命中 p50 `38.7–41.4 µs`，缺席 `8.2–9.0 µs`）、
   写放大 `3.54x` 拆成 WAL / flush / merge 三段、空间放大「每代 `1.17x`」与「一次未 compaction
   的全量覆盖后 `2.35x`」，以及为什么六个读线程只跑出单线程的 `0.98x`。每个数字都来自仓库内
@@ -139,7 +139,7 @@ MemTable 快照、Bloom Filter，每篇内含四张 Mermaid 图。
 3. [Skills → 并发控制](skills/concurrency-control.md) — 这是大多数 LSM 实现都会写错的地方。
 4. [ADR-001](decisions/adr-001-wal-frame-crc32.md) 到
    [ADR-005](decisions/adr-005-sparse-index-layout.md) — 你即将触碰的契约背后的推理。
-5. [FAQ（中文）](faq/deep-dive-qa-zh.md) — 「为什么不干脆…」式的反问，这里已经预先回答。
+5. [FAQ（中文）](faq/deep-dive-qa.zh-CN.md) — 「为什么不干脆…」式的反问，这里已经预先回答。
 
 ---
 

@@ -217,6 +217,6 @@ Three consequences follow, and they are the ones that bite in production:
   compaction; running it inline with application writes stacks two write bursts
   and doubles tail latency. Run it from a dedicated maintenance loop.
 - **Measure the amplification.** The [read-amplification benchmark](../../benchmarks/bench_read_amplification.py)
-  and the [pre-release report](../reports/benchmark-2024.md) quantify what the
+  and the [pre-release report](../reports/benchmark.md) quantify what the
   extra keyspace and tombstones do to physical IO, so the cost is a number rather
   than an intuition.

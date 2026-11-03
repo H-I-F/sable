@@ -59,10 +59,10 @@ $ sable stats --json | head -20
 | 知识库入口 | 内容 |
 | --- | --- |
 | [工程实践 Skills](docs/README.zh-CN.md#工程实践-skills底层实现指南) | WAL/截断恢复、原子落盘、并发控制——每篇都锚定源码 |
-| [硬核问答 FAQ（中文）](docs/faq/deep-dive-qa-zh.md) | 八个存储系统追问，配 Mermaid 图解 |
+| [硬核问答 FAQ（中文）](docs/faq/deep-dive-qa.zh-CN.md) | 八个存储系统追问，配 Mermaid 图解 |
 | [ADR-001 … ADR-005](docs/README.zh-CN.md#架构决策记录-adr) | 每个磁盘/内存契约背后的决策 |
 | [基准测试](docs/README.zh-CN.md#基准测试-benchmarks) | 并发压测、WAL 吞吐上限、读放大矩阵 |
-| [实测报告](docs/reports/benchmark-2024.md) | 这个引擎在一台具名机器上到底跑到多少，以及这些数字**不**覆盖什么 |
+| [实测报告](docs/reports/benchmark.md) | 这个引擎在一台具名机器上到底跑到多少，以及这些数字**不**覆盖什么 |
 | [实践配方](docs/README.zh-CN.md#实践配方-recipes) | 用引擎搭东西，例如只用范围扫描与墓碑做 [TTL 淘汰](docs/recipes/ttl-eviction.md) |
 
 上述保证背后的断言，由 [`tests/test_crash.py`](tests/test_crash.py)（十个 SIGKILL
@@ -388,7 +388,7 @@ python -m benchmarks.bench_engine --iters 20000 --value-bytes 256 --markdown
 下游开发中的问题会反向回流到这里：`0.1.1` 中的
 [快照读一致性修复](docs/case-studies/snapshot-read-consistency.zh-CN.md)，就是 sable-vector
 并发读测试期间上报的成果。同一次排查在下游也[有一份记录](https://github.com/H-I-F/sable-vector/blob/main/docs/case-studies/cross-layer-bugfix.zh-CN.md)，
-每个版本在本仓库都[有发版公告](docs/RELEASE_NOTES_v0.1.1.zh-CN.md)。
+每个版本在本仓库都[有发版公告](docs/release-notes-v0.1.1.zh-CN.md)。
 
 ## 文档与治理
 
@@ -399,7 +399,7 @@ python -m benchmarks.bench_engine --iters 20000 --value-bytes 256 --markdown
 - 安全策略：[SECURITY.md](SECURITY.md) · [简体中文](SECURITY.zh-CN.md)
 - 发布历史：[CHANGELOG.md](CHANGELOG.md) · [简体中文](CHANGELOG.zh-CN.md)
 - 演进台账（每个 PR 一个勾）：[PROGRESS.md](PROGRESS.md) · [简体中文](PROGRESS.zh-CN.md)
-- 发版公告：[v0.1.0](docs/RELEASE_NOTES_v0.1.0.zh-CN.md) · [v0.1.1](docs/RELEASE_NOTES_v0.1.1.zh-CN.md) · [v0.1.2](docs/RELEASE_NOTES_v0.1.2.zh-CN.md)
+- 发版公告：[v0.1.0](docs/release-notes-v0.1.0.zh-CN.md) · [v0.1.1](docs/release-notes-v0.1.1.zh-CN.md) · [v0.1.2](docs/release-notes-v0.1.2.zh-CN.md)
 - 案例复盘——快照读一致性修复：[docs/case-studies/snapshot-read-consistency.zh-CN.md](docs/case-studies/snapshot-read-consistency.zh-CN.md)
 
 ## 许可证

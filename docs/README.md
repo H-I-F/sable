@@ -33,11 +33,11 @@
 
 ## Release notes
 
-- [v0.1.0](RELEASE_NOTES_v0.1.0.md) / [简体中文](RELEASE_NOTES_v0.1.0.zh-CN.md) — first coherent
+- [v0.1.0](release-notes-v0.1.0.md) / [简体中文](release-notes-v0.1.0.zh-CN.md) — first coherent
   release: the complete LSM tree, the crash matrix, the inspectors and the knowledge base.
-- [v0.1.1](RELEASE_NOTES_v0.1.1.md) / [简体中文](RELEASE_NOTES_v0.1.1.zh-CN.md) — the snapshot-read
+- [v0.1.1](release-notes-v0.1.1.md) / [简体中文](release-notes-v0.1.1.zh-CN.md) — the snapshot-read
   correctness fix and `Engine.open_snapshots`.
-- [v0.1.2](RELEASE_NOTES_v0.1.2.md) / [简体中文](RELEASE_NOTES_v0.1.2.zh-CN.md) — the bilingual
+- [v0.1.2](release-notes-v0.1.2.md) / [简体中文](release-notes-v0.1.2.zh-CN.md) — the bilingual
   engineering-notes set; no engine changes.
 
 ## Skills: low-level implementation practice
@@ -62,8 +62,8 @@ Bilingual, code-anchored, diagram-backed. Eight questions spanning WAL/recovery,
 atomic publish, concurrency/compaction, tombstones/memtable snapshots, and Bloom
 filters — four Mermaid diagrams in each file.
 
-- English: [Storage Engine Deep-Dive Q&A](faq/deep-dive-qa-en.md)
-- 简体中文: [存储引擎硬核追问与深度解答](faq/deep-dive-qa-zh.md)
+- English: [Storage Engine Deep-Dive Q&A](faq/deep-dive-qa.md)
+- 简体中文: [存储引擎硬核追问与深度解答](faq/deep-dive-qa.zh-CN.md)
 
 ## Architecture Decision Records
 
@@ -105,7 +105,7 @@ verdict; a violated invariant raises instead of printing a misleading number.
 Benchmarks measure; a report commits to a reading of them, together with the host it
 was taken on and the parts it does not cover.
 
-- [Pre-release benchmark report](reports/benchmark-2024.md) / [简体中文](reports/benchmark-2024.zh-CN.md) — write path (198–219
+- [Pre-release benchmark report](reports/benchmark.md) / [简体中文](reports/benchmark.zh-CN.md) — write path (198–219
   durable records/s against 102,398–117,160 with `fsync` disabled), read path
   (p50 38.7–41.4 µs on a hit, 8.2–9.0 µs on a miss), write amplification 3.54x
   decomposed into WAL, flush and merge, space amplification 1.17x per generation
@@ -154,7 +154,7 @@ A suggested reading order for someone dropped into the codebase cold:
 4. [ADR-001](decisions/adr-001-wal-frame-crc32.md) through
    [ADR-005](decisions/adr-005-sparse-index-layout.md) — the reasoning behind the
    contracts you are about to touch.
-5. [FAQ (en)](faq/deep-dive-qa-en.md) — the "why not just…" pushback, pre-answered.
+5. [FAQ (en)](faq/deep-dive-qa.md) — the "why not just…" pushback, pre-answered.
 
 ---
 

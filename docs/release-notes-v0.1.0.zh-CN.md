@@ -1,4 +1,4 @@
-[English](RELEASE_NOTES_v0.1.0.md) | [简体中文](RELEASE_NOTES_v0.1.0.zh-CN.md)
+[English](release-notes-v0.1.0.md) | [简体中文](release-notes-v0.1.0.zh-CN.md)
 
 # sable v0.1.0
 
@@ -72,7 +72,7 @@ make lint typecheck
 - **TTL 淘汰配方** —— `docs/recipes/ttl-eviction.md` 用引擎暴露的两个原语（有序范围扫描与
   墓碑）搭出过期能力，因为引擎没有过期线程也没有 compaction filter；并给它造出的六阶段
   墓碑生命周期逐段算清代价。
-- **预发版性能报告** —— `docs/reports/benchmark-2024.md` 公布在一台具名机器上实测的写路径、
+- **预发版性能报告** —— `docs/reports/benchmark.md` 公布在一台具名机器上实测的写路径、
   读路径和三个放大系数，含多次运行之间的漂移，以及一份明确的「不覆盖什么」清单。
 - **贡献者指南与 Makefile** —— `CONTRIBUTING.md` 写明四道门禁和工具强制的约定；
   `make test | lint | typecheck | chaos | clean` 包的就是 CI 跑的那几条命令。

@@ -74,15 +74,11 @@ def headings(path: Path) -> list[str]:
 def counterpart(rel: str) -> str:
     """Expected path of the same page in the other language.
 
-    Two naming conventions are in use: ``NAME.md`` / ``NAME.zh-CN.md``, and
-    for the deep-dive FAQ ``NAME-en.md`` / ``NAME-zh.md``.
+    One convention is in use across the tree: ``NAME.md`` pairs with
+    ``NAME.zh-CN.md``.
     """
     if rel.endswith(".zh-CN.md"):
         return rel[: -len(".zh-CN.md")] + ".md"
-    if rel.endswith("-zh.md"):
-        return rel[: -len("-zh.md")] + "-en.md"
-    if rel.endswith("-en.md"):
-        return rel[: -len("-en.md")] + "-zh.md"
     return rel[: -len(".md")] + ".zh-CN.md"
 
 
