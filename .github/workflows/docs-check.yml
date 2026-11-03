@@ -1,0 +1,32 @@
+# Bilingual documentation check -- read-only, standard library only.
+# Guards the invariants the docs were built on: working links, resolvable
+# anchors, a counterpart for every page, balanced fences, and no translation
+# or generation labels. It writes nothing and installs nothing.
+name: Docs check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  docs:
+    name: docs
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Validate the bilingual documentation tree
+        run: python3 .github/scripts/check_docs.py
