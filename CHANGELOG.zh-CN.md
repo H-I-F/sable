@@ -35,10 +35,10 @@ API，这一点在这里写明，而不是让开发者在恢复数据时才撞�
 - **双语工程笔记索引** —— `docs/README.md` 与 `docs/README.zh-CN.md`，含板块表、源码地图和
   覆盖仓库内每篇文档的推荐阅读顺序。
 - **既有长文的中文版** —— `CHANGELOG`、`CONTRIBUTING`、`SECURITY`、五篇架构决策记录、
-  `docs/recipes/ttl-eviction.md`、`docs/reports/benchmark-2024.md` 和三篇 `docs/skills/` 指南，
+  `docs/recipes/ttl-eviction.md`、`docs/reports/benchmark.md` 和三篇 `docs/skills/` 指南，
   现在都各有英文 `.md` 与中文 `.zh-CN.md`。
-- **发版公告与案例复盘** —— `docs/RELEASE_NOTES_v0.1.0.md`、
-  `docs/RELEASE_NOTES_v0.1.1.md`、`docs/case-studies/snapshot-read-consistency.md`，均为双语。
+- **发版公告与案例复盘** —— `docs/release-notes-v0.1.0.md`、
+  `docs/release-notes-v0.1.1.md`、`docs/case-studies/snapshot-read-consistency.md`，均为双语。
   案例复盘从上游视角记录 v0.1.1 的快照读修复，并链到下游那份记录。
 - **`PROGRESS.zh-CN.md`** —— 演进台账拆成干净的英文 `PROGRESS.md` 与中文版，两者都保留同样的
   32 条 PR 条目和链接定义。
@@ -49,7 +49,7 @@ API，这一点在这里写明，而不是让开发者在恢复数据时才撞�
 
 - `pyproject.toml` 与 `sable.__version__` 的版本从 `0.1.1` 提到 `0.1.2`，让包报告的版本号与
   打 tag 的那次构建一致。
-- `docs/RELEASE_NOTES_v0.1.1.md` 的标题重复打了两遍，删掉多余的一行。
+- `docs/release-notes-v0.1.1.md` 的标题重复打了两遍，删掉多余的一行。
 
 ## [0.1.1] - 2026-10-30
 
@@ -116,7 +116,7 @@ API，这一点在这里写明，而不是让开发者在恢复数据时才撞�
 - **TTL 淘汰配方** —— `docs/recipes/ttl-eviction.md` 用引擎暴露的两个原语（有序范围扫描与墓碑）
   搭出过期能力，因为引擎没有过期线程也没有 compaction filter；并给它造出的六阶段墓碑生命周期
   逐段算清代价。
-- **预发版性能报告** —— `docs/reports/benchmark-2024.md` 公布在一台具名机器上实测的写路径、读路径
+- **预发版性能报告** —— `docs/reports/benchmark.md` 公布在一台具名机器上实测的写路径、读路径
   和三个放大系数，含多次运行之间的漂移，以及一份明确的「不覆盖什么」清单。
 - **贡献者指南与 Makefile** —— `CONTRIBUTING.md` 写明四道门禁和工具强制的约定；
   `make test | lint | typecheck | chaos | clean` 包的就是 CI 跑的那几条命令，于是「本地过了」和

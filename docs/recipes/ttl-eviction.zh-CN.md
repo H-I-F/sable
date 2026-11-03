@@ -199,5 +199,5 @@ compaction 是显式的，清扫里的那一步 compaction 不是可选项：光
 - **别在写路径上清扫。** 清扫会写墓碑并触发 compaction；和应用写入内联跑，等于把两次写入尖峰
   叠起来、尾延迟翻倍。放到专门的维护循环里。
 - **把放大量出来。** [读放大基准](../../benchmarks/bench_read_amplification.py) 和
-  [预发版报告](../reports/benchmark-2024.md) 量化了多出来的键空间和墓碑对物理 IO 做了什么，
+  [预发版报告](../reports/benchmark.md) 量化了多出来的键空间和墓碑对物理 IO 做了什么，
   让成本是个数字而不是一种直觉。

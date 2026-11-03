@@ -7,7 +7,7 @@ symbol names are given so the claim can be checked rather than taken on faith.
 Companion documents: [`../skills/wal-and-recovery.md`](../skills/wal-and-recovery.md),
 [`../skills/atomic-flush.md`](../skills/atomic-flush.md),
 [`../skills/concurrency-control.md`](../skills/concurrency-control.md).
-中文版本见 [`deep-dive-qa-zh.md`](deep-dive-qa-zh.md)。
+中文版本见 [`deep-dive-qa.zh-CN.md`](deep-dive-qa.zh-CN.md)。
 
 ---
 

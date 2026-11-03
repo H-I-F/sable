@@ -45,10 +45,10 @@ behaviour changed: a database written by 0.1.1 opens unchanged under 0.1.2.
   reading order covering every page in the repository.
 - **Chinese editions of the existing long-form notes** — `CHANGELOG`,
   `CONTRIBUTING`, `SECURITY`, the five architecture decision records,
-  `docs/recipes/ttl-eviction.md`, `docs/reports/benchmark-2024.md` and the three
+  `docs/recipes/ttl-eviction.md`, `docs/reports/benchmark.md` and the three
   `docs/skills/` guides now each have an English `.md` and a `.zh-CN.md`.
-- **Release notes and a case study** — `docs/RELEASE_NOTES_v0.1.0.md`,
-  `docs/RELEASE_NOTES_v0.1.1.md` and
+- **Release notes and a case study** — `docs/release-notes-v0.1.0.md`,
+  `docs/release-notes-v0.1.1.md` and
   `docs/case-studies/snapshot-read-consistency.md`, in both languages. The case
   study records the v0.1.1 snapshot-read fix from the upstream side and links to
   the downstream write-up.
@@ -63,7 +63,7 @@ behaviour changed: a database written by 0.1.1 opens unchanged under 0.1.2.
 
 - Version `0.1.1` → `0.1.2` in `pyproject.toml` and `sable.__version__`, so the
   package reports the tag it was built from.
-- `docs/RELEASE_NOTES_v0.1.1.md` had its title printed twice; the duplicate line
+- `docs/release-notes-v0.1.1.md` had its title printed twice; the duplicate line
   is gone.
 
 ## [0.1.1] - 2026-10-30
@@ -161,7 +161,7 @@ decision stated as a filesystem invariant.
   primitives the engine exposes (ordered range scans and tombstones) because there
   is no expiry thread and no compaction filter, and prices the six-stage tombstone
   lifecycle it creates.
-- **Pre-release benchmark report** — `docs/reports/benchmark-2024.md` publishes the
+- **Pre-release benchmark report** — `docs/reports/benchmark.md` publishes the
   measured write path, read path, and all three amplification factors on one named
   host, with the spread between runs and an explicit list of what it does not cover.
 - **Contributor guide and Makefile** — `CONTRIBUTING.md` states the four gates and

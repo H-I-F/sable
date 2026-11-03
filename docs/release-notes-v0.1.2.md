@@ -1,4 +1,4 @@
-[English](RELEASE_NOTES_v0.1.2.md) | [简体中文](RELEASE_NOTES_v0.1.2.zh-CN.md)
+[English](release-notes-v0.1.2.md) | [简体中文](release-notes-v0.1.2.zh-CN.md)
 
 # sable v0.1.2
 
@@ -19,10 +19,10 @@ The engineering notes under `docs/` are now a complete bilingual set:
   map every page, with a source map linking concepts back to modules and a reading
   order that starts at the root README and ends at the benchmark report.
 - **Chinese editions of the long-form pages.** The five ADRs, the TTL eviction
-  recipe, the 2024 benchmark report and the three `docs/skills/` guides each have
+  recipe, the benchmark report and the three `docs/skills/` guides each have
   an `.md` and a `.zh-CN.md` now, as do `CHANGELOG`, `CONTRIBUTING` and `SECURITY`.
-- **Release notes and a case study.** `docs/RELEASE_NOTES_v0.1.0.md`,
-  `docs/RELEASE_NOTES_v0.1.1.md` and
+- **Release notes and a case study.** `docs/release-notes-v0.1.0.md`,
+  `docs/release-notes-v0.1.1.md` and
   `docs/case-studies/snapshot-read-consistency.md` in both languages. The case
   study tells the v0.1.1 snapshot-read fix from this side and links to the
   downstream account in sable-vector.
@@ -32,7 +32,7 @@ The engineering notes under `docs/` are now a complete bilingual set:
 - **README wiring.** A documentation table, a governance list pairing English and
   简体中文 for each entry, and a link to the downstream case study.
 
-`docs/RELEASE_NOTES_v0.1.1.md` also had its title printed twice; the duplicate is
+`docs/release-notes-v0.1.1.md` also had its title printed twice; the duplicate is
 gone.
 
 ## What is not in it

@@ -1,4 +1,4 @@
-[English](RELEASE_NOTES_v0.1.2.md) | [简体中文](RELEASE_NOTES_v0.1.2.zh-CN.md)
+[English](release-notes-v0.1.2.md) | [简体中文](release-notes-v0.1.2.zh-CN.md)
 
 # sable v0.1.2
 
@@ -15,9 +15,9 @@
 
 - **两份索引。** `docs/README.md` 与 `docs/README.zh-CN.md` 把仓库里每一篇都标了出来，附一张
   把概念指回模块的源码地图，以及一份从根 README 读到实测报告的阅读顺序。
-- **既有长文的中文版。** 五篇 ADR、TTL 淘汰配方、2024 年实测报告、三篇 `docs/skills/` 指南，
+- **既有长文的中文版。** 五篇 ADR、TTL 淘汰配方、实测报告、三篇 `docs/skills/` 指南，
   现在都各有 `.md` 与 `.zh-CN.md`；`CHANGELOG`、`CONTRIBUTING`、`SECURITY` 也是。
-- **发版公告与案例复盘。** `docs/RELEASE_NOTES_v0.1.0.md`、`docs/RELEASE_NOTES_v0.1.1.md`、
+- **发版公告与案例复盘。** `docs/release-notes-v0.1.0.md`、`docs/release-notes-v0.1.1.md`、
   `docs/case-studies/snapshot-read-consistency.md`，均为双语。案例复盘从本站这一侧讲 v0.1.1
   的快照读修复，并链到 sable-vector 那边的下游记录。
 - **演进台账拆干净了。** `PROGRESS.md` 原本是英文标题裹着中文条目，现在改成纯英文，中文交给
@@ -25,7 +25,7 @@
 - **README 接好了线。** 文档表格、每条都成对给出 English 与简体中文的治理清单，以及指向下游
   案例复盘的链接。
 
-顺手修掉一处：`docs/RELEASE_NOTES_v0.1.1.md` 的标题打了两遍，删掉重复的那行。
+顺手修掉一处：`docs/release-notes-v0.1.1.md` 的标题打了两遍，删掉重复的那行。
 
 ## 这一版里没有什么
 

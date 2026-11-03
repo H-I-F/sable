@@ -1,11 +1,11 @@
-[English](benchmark-2024.md) | [简体中文](benchmark-2024.zh-CN.md)
+[English](benchmark.md) | [简体中文](benchmark.zh-CN.md)
 
 # 预发版性能基准报告
 
 **引擎：** sable 0.1.0 · **日期：** 2026-10-30 · **机器：** AMD EPYC 9K65、32 vCPU、
 Linux 6.6.117（容器，overlayfs）· **Python：** 3.11.1（CPython，GIL 开启）
 
-*以 `benchmark-2024.md` 发布；下面每个数字都来自 2026-10-30 在上述机器上的预发版运行。*
+*下面每个数字都来自上述机器上的预发版运行。*
 
 > 这份报告里的每个数字，都由当天提交在 `benchmarks/` 下的脚本、在这台机器上产出。没有从别的
 > 机器搬来的、没有从别的数据集外推的、也没有估算的。某个量在多次运行之间会漂移时，发布的是

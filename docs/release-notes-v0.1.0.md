@@ -1,4 +1,4 @@
-[English](RELEASE_NOTES_v0.1.0.md) | [简体中文](RELEASE_NOTES_v0.1.0.zh-CN.md)
+[English](release-notes-v0.1.0.md) | [简体中文](release-notes-v0.1.0.zh-CN.md)
 
 # sable v0.1.0
 
@@ -96,7 +96,7 @@ decision stated as a filesystem invariant.
   primitives the engine exposes (ordered range scans and tombstones) because there
   is no expiry thread and no compaction filter, and prices the six-stage tombstone
   lifecycle it creates.
-- **Pre-release benchmark report** — `docs/reports/benchmark-2024.md` publishes the
+- **Pre-release benchmark report** — `docs/reports/benchmark.md` publishes the
   measured write path, read path, and all three amplification factors on one named
   host, with the spread between runs and an explicit list of what it does not cover.
 - **Contributor guide and Makefile** — `CONTRIBUTING.md` states the four gates and

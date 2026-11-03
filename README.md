@@ -64,10 +64,10 @@ need to know **why**, not just **how**.
 | Knowledge base entry | What it covers |
 | --- | --- |
 | [Skills guides](docs/README.md#skills-low-level-implementation-practice) | WAL/torn-tail recovery, atomic publish, concurrency control — each anchored to source |
-| [FAQ (bilingual)](docs/faq/deep-dive-qa-en.md) | eight storage-system questions with Mermaid diagrams |
+| [FAQ (bilingual)](docs/faq/deep-dive-qa.md) | eight storage-system questions with Mermaid diagrams |
 | [ADR-001 … ADR-005](docs/README.md#architecture-decision-records) | the decisions behind every on-disk and in-memory contract |
 | [Benchmarks](docs/README.md#benchmarks) | concurrent stress, WAL throughput and read-amplification harnesses |
-| [Benchmark report](docs/reports/benchmark-2024.md) | what this engine actually measures on one named host — and what the numbers do not cover |
+| [Benchmark report](docs/reports/benchmark.md) | what this engine actually measures on one named host — and what the numbers do not cover |
 | [Recipes](docs/README.md#recipes-building-on-the-engine) | building on the engine, e.g. [TTL eviction](docs/recipes/ttl-eviction.md) with nothing but range scans and tombstones |
 
 The assertions behind the guarantees above are exercised by
@@ -420,7 +420,7 @@ Problems surfaced from that work feed back here: the
 [snapshot-read consistency correction](docs/case-studies/snapshot-read-consistency.md) in `0.1.1`
 was reported during sable-vector's concurrent-read testing. The same investigation is written up from
 the downstream side [there](https://github.com/H-I-F/sable-vector/blob/main/docs/case-studies/cross-layer-bugfix.md),
-and each release carries an [announcement](docs/RELEASE_NOTES_v0.1.1.md) in this repository.
+and each release carries an [announcement](docs/release-notes-v0.1.1.md) in this repository.
 
 ## Documentation & governance
 
@@ -431,7 +431,7 @@ and each release carries an [announcement](docs/RELEASE_NOTES_v0.1.1.md) in this
 - Security policy: [SECURITY.md](SECURITY.md) · [简体中文](SECURITY.zh-CN.md)
 - Release history: [CHANGELOG.md](CHANGELOG.md) · [简体中文](CHANGELOG.zh-CN.md)
 - Evolution ledger (one tick per PR): [PROGRESS.md](PROGRESS.md) · [简体中文](PROGRESS.zh-CN.md)
-- Release notes: [v0.1.0](docs/RELEASE_NOTES_v0.1.0.md) · [v0.1.1](docs/RELEASE_NOTES_v0.1.1.md) · [v0.1.2](docs/RELEASE_NOTES_v0.1.2.md)
+- Release notes: [v0.1.0](docs/release-notes-v0.1.0.md) · [v0.1.1](docs/release-notes-v0.1.1.md) · [v0.1.2](docs/release-notes-v0.1.2.md)
 - Case study — the snapshot-read consistency fix: [docs/case-studies/snapshot-read-consistency.md](docs/case-studies/snapshot-read-consistency.md)
 
 ## License

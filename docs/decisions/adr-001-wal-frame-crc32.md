@@ -14,7 +14,7 @@ Every WAL frame needs an integrity check. The scanner uses it to answer one
 question that cannot be answered any other way: *did this frame reach stable
 storage intact?* — and, downstream, to separate "never promised" (torn tail)
 from "promised and lost" (corruption). See
-[`../faq/deep-dive-qa-en.md`](../faq/deep-dive-qa-en.md) Q1 and Q2.
+[`../faq/deep-dive-qa.md`](../faq/deep-dive-qa.md) Q1 and Q2.
 
 Constraints that bound the choice:
 

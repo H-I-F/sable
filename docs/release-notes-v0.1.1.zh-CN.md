@@ -1,4 +1,4 @@
-[English](RELEASE_NOTES_v0.1.1.md) | [简体中文](RELEASE_NOTES_v0.1.1.zh-CN.md)
+[English](release-notes-v0.1.1.md) | [简体中文](release-notes-v0.1.1.zh-CN.md)
 
 # sable v0.1.1
 
