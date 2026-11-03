@@ -398,7 +398,7 @@ python -m benchmarks.bench_engine --iters 20000 --value-bytes 256 --markdown
 - 贡献指南：[CONTRIBUTING.md](CONTRIBUTING.md) · [简体中文](CONTRIBUTING.zh-CN.md)
 - 安全策略：[SECURITY.md](SECURITY.md) · [简体中文](SECURITY.zh-CN.md)
 - 发布历史：[CHANGELOG.md](CHANGELOG.md) · [简体中文](CHANGELOG.zh-CN.md)
-- 演进台账（每个 PR 一个勾）：[PROGRESS.md](PROGRESS.md)
+- 演进台账（每个 PR 一个勾）：[PROGRESS.md](PROGRESS.md) · [简体中文](PROGRESS.zh-CN.md)
 - 发版公告：[v0.1.0](docs/RELEASE_NOTES_v0.1.0.zh-CN.md) · [v0.1.1](docs/RELEASE_NOTES_v0.1.1.zh-CN.md)
 - 案例复盘——快照读一致性修复：[docs/case-studies/snapshot-read-consistency.zh-CN.md](docs/case-studies/snapshot-read-consistency.zh-CN.md)
 
