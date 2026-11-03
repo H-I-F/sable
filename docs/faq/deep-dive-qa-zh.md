@@ -5,7 +5,7 @@
 配套文档：[`../skills/wal-and-recovery.md`](../skills/wal-and-recovery.md)、
 [`../skills/atomic-flush.md`](../skills/atomic-flush.md)、
 [`../skills/concurrency-control.md`](../skills/concurrency-control.md)。
-English version: [`interview-qa-en.md`](interview-qa-en.md)。
+English version: [`deep-dive-qa-en.md`](deep-dive-qa-en.md)。
 
 ---
 

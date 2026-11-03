@@ -64,7 +64,7 @@ need to know **why**, not just **how**.
 | Knowledge base entry | What it covers |
 | --- | --- |
 | [Skills guides](docs/README.md#skills-low-level-implementation-practice) | WAL/torn-tail recovery, atomic publish, concurrency control — each anchored to source |
-| [FAQ (bilingual)](docs/faq/interview-qa-en.md) | eight storage-system questions with Mermaid diagrams |
+| [FAQ (bilingual)](docs/faq/deep-dive-qa-en.md) | eight storage-system questions with Mermaid diagrams |
 | [ADR-001 … ADR-005](docs/README.md#architecture-decision-records) | the decisions behind every on-disk and in-memory contract |
 | [Benchmarks](docs/README.md#benchmarks) | concurrent stress, WAL throughput and read-amplification harnesses |
 | [Benchmark report](docs/reports/benchmark-2024.md) | what this engine actually measures on one named host — and what the numbers do not cover |
