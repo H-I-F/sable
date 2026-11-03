@@ -20,21 +20,37 @@
 | [Benchmarks](#benchmarks) | performance work, regression hunting | runnable harnesses |
 | [Reports](#reports-measured-numbers) | capacity planning, "will this hold at 10x" | measured runs on a named host |
 | [Recipes](#recipes-building-on-the-engine) | solving a problem *with* the engine | runnable patterns, cost tables |
+| [Case studies](#case-studies) | post-mortems, design review | narrative with the reproduction |
+| [Release notes](#release-notes) | upgrading between versions | one announcement per tag, bilingual |
 | [Source map](#source-map) | finding the code behind a concept | module table |
+
+## Case studies
+
+- [When `get` and `scan` disagreed about a snapshot](case-studies/snapshot-read-consistency.md) /
+  [简体中文](case-studies/snapshot-read-consistency.zh-CN.md) — the v0.1.1 snapshot-read fix,
+  reproduced in pure `sable` and written up from the upstream side. The reporting project's account
+  is [here](https://github.com/H-I-F/sable-vector/blob/main/docs/case-studies/cross-layer-bugfix.md).
+
+## Release notes
+
+- [v0.1.0](RELEASE_NOTES_v0.1.0.md) / [简体中文](RELEASE_NOTES_v0.1.0.zh-CN.md) — first coherent
+  release: the complete LSM tree, the crash matrix, the inspectors and the knowledge base.
+- [v0.1.1](RELEASE_NOTES_v0.1.1.md) / [简体中文](RELEASE_NOTES_v0.1.1.zh-CN.md) — the snapshot-read
+  correctness fix and `Engine.open_snapshots`.
 
 ## Skills: low-level implementation practice
 
 Three deep guides, each grounded in the actual source rather than generic advice.
 
-- [Write-Ahead Logging and Torn-Tail Recovery](skills/wal-and-recovery.md) — the 21-byte frame
+- [Write-Ahead Logging and Torn-Tail Recovery](skills/wal-and-recovery.md) / [简体中文](skills/wal-and-recovery.zh-CN.md) — the 21-byte frame
   anatomy, why CRC32 sits at the *front*, the five-case recovery decision table, the
   distinction between a discardable torn tail and a fatal mid-stream checksum, and a
   WAL state machine designed so byte-image, `monkeypatch`, and SIGKILL tests can all
   drive it.
-- [Atomic Publish](skills/atomic-flush.md) — `temp → fsync → rename → fsync(parent)`,
+- [Atomic Publish](skills/atomic-flush.md) / [简体中文](skills/atomic-flush.zh-CN.md) — `temp → fsync → rename → fsync(parent)`,
   why skipping the directory fsync leaves data durable but unnamed, `os.replace` vs
   `os.rename`, and the documented Windows/NTFS degradation.
-- [Concurrency Control](skills/concurrency-control.md) — reference-counted file leases
+- [Concurrency Control](skills/concurrency-control.md) / [简体中文](skills/concurrency-control.zh-CN.md) — reference-counted file leases
   versus a reader-writer lock, snapshot sequence bands, the three-lock set and its
   ordering rules, and deterministic race tests built on `threading.Barrier`.
 
@@ -52,15 +68,15 @@ filters — four Mermaid diagrams in each file.
 Five decisions that shaped the engine, each in **Status / Context / Decision /
 Consequences** form. Read these before changing any on-disk or in-memory contract.
 
-- [ADR-001: WAL frame integrity uses CRC32](decisions/adr-001-wal-frame-crc32.md) — why
+- [ADR-001: WAL frame integrity uses CRC32](decisions/adr-001-wal-frame-crc32.md) / [简体中文](decisions/adr-001-wal-frame-crc32.zh-CN.md) — why
   CRC32, not SHA-256 or CRC64, for per-frame verification.
-- [ADR-002: Compaction is explicit, not scheduled](decisions/adr-002-manual-compaction-policy.md) —
+- [ADR-002: Compaction is explicit, not scheduled](decisions/adr-002-manual-compaction-policy.md) / [简体中文](decisions/adr-002-manual-compaction-policy.zh-CN.md) —
   why a background compactor thread was rejected.
-- [ADR-003: Reference-counted file leases for snapshot safety](decisions/adr-003-refcount-file-snapshots.md) —
+- [ADR-003: Reference-counted file leases for snapshot safety](decisions/adr-003-refcount-file-snapshots.md) / [简体中文](decisions/adr-003-refcount-file-snapshots.zh-CN.md) —
   why file leases beat an RWLock, epochs, and finalisers.
-- [ADR-004: Synchronous WAL flush by default (append-before-apply)](decisions/adr-004-sync-flush-guarantees.md) —
+- [ADR-004: Synchronous WAL flush by default (append-before-apply)](decisions/adr-004-sync-flush-guarantees.md) / [简体中文](decisions/adr-004-sync-flush-guarantees.zh-CN.md) —
   why every acknowledged write is fsync-ed immediately.
-- [ADR-005: Sparse per-block index at the tail of each SSTable](decisions/adr-005-sparse-index-layout.md) —
+- [ADR-005: Sparse per-block index at the tail of each SSTable](decisions/adr-005-sparse-index-layout.md) / [简体中文](decisions/adr-005-sparse-index-layout.zh-CN.md) —
   why the index is sparse, per-block, and at the tail rather than the head.
 
 ## Benchmarks
@@ -87,7 +103,7 @@ verdict; a violated invariant raises instead of printing a misleading number.
 Benchmarks measure; a report commits to a reading of them, together with the host it
 was taken on and the parts it does not cover.
 
-- [Pre-release benchmark report](reports/benchmark-2024.md) — write path (198–219
+- [Pre-release benchmark report](reports/benchmark-2024.md) / [简体中文](reports/benchmark-2024.zh-CN.md) — write path (198–219
   durable records/s against 102,398–117,160 with `fsync` disabled), read path
   (p50 38.7–41.4 µs on a hit, 8.2–9.0 µs on a miss), write amplification 3.54x
   decomposed into WAL, flush and merge, space amplification 1.17x per generation
@@ -101,7 +117,7 @@ The engine is the substrate, not the product. These pages take a problem the eng
 does *not* solve and build the solution from the two primitives it does expose —
 ordered range scans and tombstones.
 
-- [Application-level TTL eviction](recipes/ttl-eviction.md) — `sable` has no expiry
+- [Application-level TTL eviction](recipes/ttl-eviction.md) / [简体中文](recipes/ttl-eviction.zh-CN.md) — `sable` has no expiry
   thread and no compaction filter, so expiry is built from a big-endian, fixed-width
   index key that turns "everything older than now" into a half-open range query.
   Three runnable snippets (`put_with_ttl`, `get_if_live`, `evict_expired`), the

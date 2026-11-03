@@ -19,19 +19,34 @@
 | [基准测试 Benchmarks](#基准测试-benchmarks) | 性能调优、回归排查 | 可运行压测脚本 |
 | [实测报告 Reports](#实测报告-reports) | 容量规划、「放大到 10 倍还撑得住吗」 | 具名机器上的实测运行 |
 | [实践配方 Recipes](#实践配方-recipes) | 用这个引擎**去解决**某个问题 | 可运行模式 + 成本表 |
+| [案例复盘](#案例复盘) | 复盘、设计评审 | 带复现过程的叙事 |
+| [发版公告](#发版公告) | 版本之间升级 | 每个 tag 一篇，中英双语 |
 | [源码地图 Source map](#源码地图-source-map) | 从概念反查代码 | 模块对照表 |
+
+## 案例复盘
+
+- [当 `get` 和 `scan` 对一个快照给出不同答案](case-studies/snapshot-read-consistency.zh-CN.md) /
+  [English](case-studies/snapshot-read-consistency.md) —— v0.1.1 的快照读修复，纯 `sable` 复现，
+  从上游视角写。报告方的记录[在这里](https://github.com/H-I-F/sable-vector/blob/main/docs/case-studies/cross-layer-bugfix.zh-CN.md)。
+
+## 发版公告
+
+- [v0.1.0](RELEASE_NOTES_v0.1.0.zh-CN.md) / [English](RELEASE_NOTES_v0.1.0.md) —— 第一个完整版本：
+  完整的 LSM 树、崩溃矩阵、检查器与知识库。
+- [v0.1.1](RELEASE_NOTES_v0.1.1.zh-CN.md) / [English](RELEASE_NOTES_v0.1.1.md) —— 快照读正确性
+  修复与 `Engine.open_snapshots`。
 
 ## 工程实践 Skills（底层实现指南）
 
 三篇深入指南，每一篇都基于真实源码，而非泛泛而谈。
 
-- [WAL 与 torn-tail 截断恢复](skills/wal-and-recovery.md) — 21 字节帧结构拆解、为什么
+- [WAL 与 torn-tail 截断恢复](skills/wal-and-recovery.zh-CN.md) / [English](skills/wal-and-recovery.md) — 21 字节帧结构拆解、为什么
   CRC32 放在帧*最前*、五情形恢复决策表、可丢弃的尾部半帧与致命的流中段校验失败之间的
   区分，以及一个可被字节镜像 / `monkeypatch` / SIGKILL 三种测试共同驱动的 WAL 状态机。
-- [原子落盘](skills/atomic-flush.md) — `临时文件 → fsync → rename → fsync(父目录)`，
+- [原子落盘](skills/atomic-flush.zh-CN.md) / [English](skills/atomic-flush.md) — `临时文件 → fsync → rename → fsync(父目录)`，
   为什么跳过目录 fsync 会让数据「持久但无名」、`os.replace` 与 `os.rename` 的区别，以及
   Windows/NTFS 上的优雅降级。
-- [并发控制](skills/concurrency-control.md) — 引用计数文件租约对比读写锁、快照序列带
+- [并发控制](skills/concurrency-control.zh-CN.md) / [English](skills/concurrency-control.md) — 引用计数文件租约对比读写锁、快照序列带
   （snapshot sequence bands）、三把锁的集合与加锁顺序，以及基于 `threading.Barrier`
   的确定性竞态测试。
 
@@ -48,15 +63,15 @@ MemTable 快照、Bloom Filter，每篇内含四张 Mermaid 图。
 五个塑造了引擎的关键决策，均以 **状态 / 背景 / 决策 / 后果** 格式记录。在改动任何磁盘
 或内存契约之前，请先读这些。
 
-- [ADR-001: WAL 帧完整性使用 CRC32](decisions/adr-001-wal-frame-crc32.md) — 为什么是
+- [ADR-001: WAL 帧完整性使用 CRC32](decisions/adr-001-wal-frame-crc32.zh-CN.md) / [English](decisions/adr-001-wal-frame-crc32.md) — 为什么是
   CRC32 而非 SHA-256 或 CRC64。
-- [ADR-002: Compaction 显式触发，而非后台调度](decisions/adr-002-manual-compaction-policy.md) —
+- [ADR-002: Compaction 显式触发，而非后台调度](decisions/adr-002-manual-compaction-policy.zh-CN.md) / [English](decisions/adr-002-manual-compaction-policy.md) —
   为什么拒绝后台 Compactor 线程。
-- [ADR-003: 用引用计数文件租约保障快照安全](decisions/adr-003-refcount-file-snapshots.md) —
+- [ADR-003: 用引用计数文件租约保障快照安全](decisions/adr-003-refcount-file-snapshots.zh-CN.md) / [English](decisions/adr-003-refcount-file-snapshots.md) —
   为什么文件租约胜过 RWLock、epoch 与 finaliser。
-- [ADR-004: 默认同步刷写 WAL（先写日志后应用）](decisions/adr-004-sync-flush-guarantees.md) —
+- [ADR-004: 默认同步刷写 WAL（先写日志后应用）](decisions/adr-004-sync-flush-guarantees.zh-CN.md) / [English](decisions/adr-004-sync-flush-guarantees.md) —
   为什么每条已确认写入都立即 `fsync`。
-- [ADR-005: 每个 SSTable 尾部使用稀疏块级索引](decisions/adr-005-sparse-index-layout.md) —
+- [ADR-005: 每个 SSTable 尾部使用稀疏块级索引](decisions/adr-005-sparse-index-layout.zh-CN.md) / [English](decisions/adr-005-sparse-index-layout.md) —
   为什么索引是稀疏、按块、置于尾部而非头部。
 
 ## 基准测试 Benchmarks
@@ -80,7 +95,7 @@ MemTable 快照、Bloom Filter，每篇内含四张 Mermaid 图。
 
 压测负责测量；报告负责给出**对数字的解读**，连同采集它的机器、以及它刻意不覆盖的部分。
 
-- [预发版性能基准报告](reports/benchmark-2024.md) — 写路径（持久化 `198–219 rec/s`，关闭
+- [预发版性能基准报告](reports/benchmark-2024.zh-CN.md) / [English](reports/benchmark-2024.md) — 写路径（持久化 `198–219 rec/s`，关闭
   `fsync` 为 `102,398–117,160 rec/s`）、读路径（命中 p50 `38.7–41.4 µs`，缺席 `8.2–9.0 µs`）、
   写放大 `3.54x` 拆成 WAL / flush / merge 三段、空间放大「每代 `1.17x`」与「一次未 compaction
   的全量覆盖后 `2.35x`」，以及为什么六个读线程只跑出单线程的 `0.98x`。每个数字都来自仓库内
@@ -91,7 +106,7 @@ MemTable 快照、Bloom Filter，每篇内含四张 Mermaid 图。
 引擎是底座，不是成品。这些页面拿一个引擎**没有**解决的问题，用引擎真正暴露的两个原语
 ——有序范围扫描与墓碑——把它搭出来。
 
-- [用户态 TTL 淘汰](recipes/ttl-eviction.md) — `sable` 没有过期线程，也没有 compaction
+- [用户态 TTL 淘汰](recipes/ttl-eviction.zh-CN.md) / [English](recipes/ttl-eviction.md) — `sable` 没有过期线程，也没有 compaction
   filter，于是过期能力建在一个**大端定长**的索引键上：它让「所有早于此刻过期的记录」精确等于
   一个半开区间查询。含三段可运行代码（`put_with_ttl`、`get_if_live`、`evict_expired`）、
   墓碑经过六个阶段时各自新增的读/写/空间代价，以及防止重写记录继承旧截止时间的

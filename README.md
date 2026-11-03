@@ -15,6 +15,7 @@ compaction.
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Dependencies](https://img.shields.io/badge/runtime%20deps-0-brightgreen.svg)](pyproject.toml)
 [![Docs](https://img.shields.io/badge/docs-knowledge%20base-blue.svg)](docs/README.md)
+[![Downstream](https://img.shields.io/badge/used%20by-sable--vector-8A2BE2.svg)](https://github.com/H-I-F/sable-vector)
 [![Release](https://img.shields.io/github/v/release/H-I-F/sable)](https://github.com/H-I-F/sable/releases)
 [![Coverage](coverage.svg)](coverage.svg)
 [![Contributors](https://img.shields.io/github/contributors/H-I-F/sable)](https://github.com/H-I-F/sable/contributors)
@@ -415,8 +416,23 @@ consumer is [**sable-vector**](https://github.com/H-I-F/sable-vector), an
 embedded hybrid vector search engine that keeps vectors, payloads and scalar
 inverted entries in one `sable` tree.
 
-Problems surfaced from that work feed back here: the snapshot-read consistency
-correction in `0.1.1` was reported during sable-vector's concurrent-read testing.
+Problems surfaced from that work feed back here: the
+[snapshot-read consistency correction](docs/case-studies/snapshot-read-consistency.md) in `0.1.1`
+was reported during sable-vector's concurrent-read testing. The same investigation is written up from
+the downstream side [there](https://github.com/H-I-F/sable-vector/blob/main/docs/case-studies/cross-layer-bugfix.md),
+and both releases have [announcements](docs/RELEASE_NOTES_v0.1.1.md) in this repository.
+
+## Documentation & governance
+
+- Architecture and usage: this README and [简体中文](README.zh-CN.md)
+- Engineering knowledge base: [docs/README.md](docs/README.md) · [简体中文](docs/README.zh-CN.md)
+- Architecture decision records: [ADR-001 … ADR-005](docs/README.md#architecture-decision-records)
+- Contributor guide: [CONTRIBUTING.md](CONTRIBUTING.md) · [简体中文](CONTRIBUTING.zh-CN.md)
+- Security policy: [SECURITY.md](SECURITY.md) · [简体中文](SECURITY.zh-CN.md)
+- Release history: [CHANGELOG.md](CHANGELOG.md) · [简体中文](CHANGELOG.zh-CN.md)
+- Evolution ledger (one tick per PR): [PROGRESS.md](PROGRESS.md)
+- Release notes: [v0.1.0](docs/RELEASE_NOTES_v0.1.0.md) · [v0.1.1](docs/RELEASE_NOTES_v0.1.1.md)
+- Case study — the snapshot-read consistency fix: [docs/case-studies/snapshot-read-consistency.md](docs/case-studies/snapshot-read-consistency.md)
 
 ## License
 
