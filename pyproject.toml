@@ -31,7 +31,7 @@ sable = "sable.cli:main"
 # CI and contributors pin one known-good toolchain rather than drifting.
 [project.optional-dependencies]
 test = ["pytest>=9.2.0", "pytest-cov>=7.1.0"]
-dev = ["ruff==0.17.3", "mypy==2.4.1", "pytest>=9.2.0", "pytest-cov>=7.1.0"]
+dev = ["ruff==0.17.4", "mypy==2.4.1", "pytest>=9.2.0", "pytest-cov>=7.1.0"]
 
 [project.urls]
 Repository = "https://github.com/H-I-F/sable"
