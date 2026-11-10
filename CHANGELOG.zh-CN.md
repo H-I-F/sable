@@ -9,6 +9,12 @@ API，这一点在这里写明，而不是让开发者在恢复数据时才撞�
 
 ## [未发布]
 
+## [0.1.3] - 2026-11-10
+
+一次维护发版。引擎没动：WAL 帧、SSTable 布局、读写路径、快照、CLI 和公开 API 都与 0.1.2
+一模一样，0.1.2 写出来的数据库照常打开。动的是固定的 linter 和版本号。从 v0.1.2 起一直挂在
+`[未发布]` 段的工具与治理事项，这次归进正式记录。
+
 ### 新增
 
 - **确定性的 PR 评审报告。** 每个 PR 现在会收到一条固定评论，含变更地图、实时 CI 门禁状态和
@@ -24,6 +30,13 @@ API，这一点在这里写明，而不是让开发者在恢复数据时才撞�
   现在也落在新 owner 下。作者元数据未变。
 
   这是一次治理动作，不是发版：代码、存储布局、版本号都没动，已有安装和已有数据库不受影响。
+
+- **固定工具链：`ruff` 0.17.3 → 0.17.4。** dev extra 现在装这个 linter 的最新补丁版。两份贡献
+  指南里打印的版本号同步改了，干净的 `.[dev]` checkout 报出来的数字和指南一致。CI 也是从这组
+  extras 装，所以 lint 门禁在合入前已经跑过 0.17.4。运行时依赖没动。
+
+- `pyproject.toml` 与 `sable.__version__` 的版本从 `0.1.2` 提到 `0.1.3`，让包报告的版本号与
+  打 tag 的那次构建一致。
 
 ## [0.1.2] - 2026-11-03
 
@@ -141,7 +154,8 @@ API，这一点在这里写明，而不是让开发者在恢复数据时才撞�
   「段没了」。现在两者都以退出码 2 在 stderr 给一行原因，SSTable CLI 也把外来或损坏文件走同一条
   路径。库函数不变——`inspect_wal` 对缺失文件仍返回 `[]`，这是段遍历需要的语义。
 
-[未发布]: https://github.com/H-I-F/sable/compare/v0.1.2...HEAD
+[未发布]: https://github.com/H-I-F/sable/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/H-I-F/sable/releases/tag/v0.1.3
 [0.1.2]: https://github.com/H-I-F/sable/releases/tag/v0.1.2
 [0.1.1]: https://github.com/H-I-F/sable/releases/tag/v0.1.1
 [0.1.0]: https://github.com/H-I-F/sable/releases/tag/v0.1.0

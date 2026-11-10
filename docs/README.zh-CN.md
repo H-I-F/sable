@@ -37,6 +37,8 @@
   修复与 `Engine.open_snapshots`。
 - [v0.1.2](release-notes-v0.1.2.zh-CN.md) / [English](release-notes-v0.1.2.md) —— 补齐中英双语
   工程笔记，引擎没有改动。
+- [v0.1.3](release-notes-v0.1.3.zh-CN.md) / [English](release-notes-v0.1.3.md) —— 固定的 linter
+  升级，贡献指南版本号同步，引擎没有改动。
 
 ## 工程实践 Skills（底层实现指南）
 
