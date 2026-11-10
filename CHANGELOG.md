@@ -9,6 +9,14 @@ Format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-11-10
+
+A maintenance release. The engine is untouched: the WAL frame, SSTable layout,
+read and write paths, snapshots, the CLI and the public API are exactly as they
+were in 0.1.2, and a database written by 0.1.2 opens unchanged. What moved is
+the pinned linter and the version number. The tooling and governance items that
+had been sitting under `Unreleased` since v0.1.2 are now part of the history.
+
 ### Added
 
 - **Deterministic PR review report.** Every pull request now receives one sticky
@@ -30,6 +38,15 @@ Format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   This is a governance move, not a release: no code, no storage layout and no
   version number changed, so existing installs and existing databases are
   unaffected.
+
+- **Pinned toolchain: `ruff` 0.17.3 → 0.17.4.** The dev extra now installs the
+  latest patch of the linter. Both contributor guides were updated to print the
+  same version, so a clean `.[dev]` checkout reports what the guide says. CI
+  installs from that extra, so the lint gate ran on 0.17.4 before this landed.
+  No runtime dependency changed.
+
+- Version `0.1.2` → `0.1.3` in `pyproject.toml` and `sable.__version__`, so the
+  package reports the tag it was built from.
 
 ## [0.1.2] - 2026-11-03
 
@@ -193,7 +210,8 @@ decision stated as a filesystem invariant.
   functions are unchanged — `inspect_wal` still returns `[]` for a missing file,
   which is what segment iteration needs.
 
-[Unreleased]: https://github.com/H-I-F/sable/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/H-I-F/sable/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/H-I-F/sable/releases/tag/v0.1.3
 [0.1.2]: https://github.com/H-I-F/sable/releases/tag/v0.1.2
 [0.1.1]: https://github.com/H-I-F/sable/releases/tag/v0.1.1
 [0.1.0]: https://github.com/H-I-F/sable/releases/tag/v0.1.0

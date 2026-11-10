@@ -39,6 +39,8 @@
   correctness fix and `Engine.open_snapshots`.
 - [v0.1.2](release-notes-v0.1.2.md) / [简体中文](release-notes-v0.1.2.zh-CN.md) — the bilingual
   engineering-notes set; no engine changes.
+- [v0.1.3](release-notes-v0.1.3.md) / [简体中文](release-notes-v0.1.3.zh-CN.md) — the pinned
+  linter update and synced contributor guides; no engine changes.
 
 ## Skills: low-level implementation practice
 
