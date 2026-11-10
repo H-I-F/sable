@@ -37,7 +37,7 @@ python -m pip install -e ".[dev]"
 写代码之前先确认环境：
 
 ```bash
-ruff --version                     # 0.17.3
+ruff --version                     # 0.17.4
 mypy --version                     # 2.4.1
 pytest -q                          # 动手之前套件本来就是绿的
 ```

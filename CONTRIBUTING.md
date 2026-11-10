@@ -38,7 +38,7 @@ CI resolves the same extras, so a version that works on your machine works in CI
 Confirm the environment before you write code:
 
 ```bash
-ruff --version                     # 0.17.3
+ruff --version                     # 0.17.4
 mypy --version                     # 2.4.1
 pytest -q                          # the suite is green before you touch it
 ```
