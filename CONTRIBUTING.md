@@ -17,6 +17,7 @@ will hold you to.
 4. [Tests](#4-tests)
 5. [Commit messages](#5-commit-messages)
 6. [Pull requests](#6-pull-requests)
+7. [Maintenance and releases](#7-maintenance-and-releases)
 
 ## 1. Set up
 
@@ -231,3 +232,24 @@ python -m sable.topology path/to/db                   # which file holds what
 Each one reads a file the engine wrote and prints what it found; none of them need
 the engine to be open, which is what makes them usable against the wreckage of a
 failed run.
+
+## 7. Maintenance and releases
+
+Most changes here never touch the engine: dependency bumps, CI and workflow edits,
+bot configuration, documentation, dev-tool pins. Those are `routine`. A Dependabot
+PR classified `routine` merges on its own once CI is green — you do not need to
+review or click merge, and it does not get a release of its own.
+
+The split is computed, not negotiated at review time.
+`.github/scripts/change_policy.py` is the single definition: it reads the changed
+files and returns one of three tiers — `core` (anything under `src/`, or a runtime
+dependency; the only tier that earns a release), `review` (a base image or action
+reference jump, which stays with a human), and `routine`. The auto-merge workflow,
+the PR report and the release tooling all read the same verdict, so a rule change
+happens in exactly one place. An empty or malformed file list is an error, never a
+`routine` result.
+
+`policy-check.yml` runs both self-tests plus a release-consistency check on every
+push and pull request, and is a required status check. The full convention,
+including the steps to cut a release, is in
+[RELEASING.md](RELEASING.md) · [简体中文](RELEASING.zh-CN.md).

@@ -1,0 +1,43 @@
+# The maintenance convention, enforced rather than merely written down.
+#
+# Two jobs elsewhere consume .github/scripts/change_policy.py: the auto-merge
+# workflow (to decide what may merge itself) and pr-report (to show the verdict).
+# If the classifier silently stops working, both would quietly drift toward
+# "routine", so this workflow proves the detectors still fire before trusting
+# them, then checks the release tree for consistency.
+#
+# Read-only, standard library only, no network, no writes.
+name: Policy check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: policy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  policy:
+    name: policy
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Prove the change classifier still fires
+        run: python3 .github/scripts/change_policy.py --self-test
+
+      - name: Prove the release guard still fires
+        run: python3 .github/scripts/release_tool.py --self-test
+
+      - name: Version sources, changelogs, links and indexes agree
+        run: python3 .github/scripts/release_tool.py check

@@ -9,6 +9,10 @@
 # required status check and branch protection rule is satisfied, so a red check
 # never reaches main. No third-party action, no PAT, no extra secret.
 #
+# A pull request is armed only when .github/scripts/change_policy.py classifies
+# it as `routine`. That script is the one definition of what may merge itself;
+# `review` (a wide version jump) and `core` (engine code) stay with a human.
+#
 # Triggers:
 #   workflow_run (CI)  -> arm auto-merge on the Dependabot PR behind that run
 #   workflow_dispatch  -> retry by hand for one PR number
@@ -44,6 +48,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      # Never the PR ref. The classifier is the rule, and it comes from the
+      # default branch so an incoming PR cannot rewrite it before it is read.
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+
       - name: Resolve the PR behind this run
         id: resolve
         env:
@@ -70,7 +81,7 @@ jobs:
           fi
           echo "pr=$pr" >> "$GITHUB_OUTPUT"
 
-      - name: Arm auto-merge if this is a ready Dependabot PR
+      - name: Arm auto-merge if this is a ready, routine Dependabot PR
         if: steps.resolve.outputs.pr != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -95,5 +106,21 @@ jobs:
             echo "::notice::#$PR already has auto-merge armed"
             exit 0
           fi
+
+          # Bootstrap guard: the PR that introduces the classifier runs before
+          # the default branch has it. Do not arm anything in that window.
+          if [ ! -f .github/scripts/change_policy.py ]; then
+            echo "::notice::bootstrap: classifier not on default branch yet; skipping"
+            exit 0
+          fi
+          verdict=$(gh api "repos/$GH_REPO/pulls/$PR/files" --paginate \
+                    | python3 .github/scripts/change_policy.py --json)
+          tier=$(printf '%s' "$verdict" | jq -r '.tier')
+          auto=$(printf '%s' "$verdict" | jq -r '.auto_merge')
+          echo "::notice::#$PR policy: tier=$tier auto-merge=$auto"
+          if [ "$auto" != "true" ]; then
+            echo "::notice::#$PR is $tier; leaving it for a human"
+            exit 0
+          fi
           gh pr merge "$PR" --auto --squash --repo "$GH_REPO"
-          echo "auto-merge armed for #$PR"
+          echo "auto-merge armed for #$PR ($tier)"
