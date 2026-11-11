@@ -39,6 +39,8 @@
   工程笔记，引擎没有改动。
 - [v0.1.3](release-notes-v0.1.3.zh-CN.md) / [English](release-notes-v0.1.3.md) —— 固定的 linter
   升级，贡献指南版本号同步，引擎没有改动。
+- [v0.1.4](release-notes-v0.1.4.zh-CN.md) / [English](release-notes-v0.1.4.md) —— 依赖自动合并、
+  每月分组的 Dependabot，以及往后发版的约定。
 
 ## 工程实践 Skills（底层实现指南）
 
