@@ -240,6 +240,20 @@ def build_report(pr: dict, files: list, checks: list, rules_hit: list,
     lines.append(f"| **Author** | `{author}`" + (" (automated)" if is_bot else "") + " |")
     lines.append(f"| **Change** | {len(files)} file(s), +{adds} / -{dels} |")
     lines.append(f"| **Head** | `{head[:7]}` |")
+
+    # The verdict comes from the same classifier the auto-merge workflow uses,
+    # so the rule is visible here instead of being a black box. The report runs
+    # on the default branch; before this script is merged the classifier may
+    # not be there yet, so a missing module only omits the line.
+    try:
+        from change_policy import classify as classify_change
+        verdict = classify_change(files)
+        action = ("release due, human review" if verdict.release
+                  else "auto-merge eligible, no release" if verdict.auto_merge
+                  else "human review, no release")
+        lines.append(f"| **Change policy** | `{verdict.tier}` - {action} |")
+    except (ImportError, ValueError, KeyError, RuntimeError) as exc:
+        lines.append(f"| **Change policy** | unavailable ({type(exc).__name__}) |")
     lines.append("")
 
     lines.append("### Change map")

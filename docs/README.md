@@ -22,6 +22,7 @@
 | [Recipes](#recipes-building-on-the-engine) | solving a problem *with* the engine | runnable patterns, cost tables |
 | [Case studies](#case-studies) | post-mortems, design review | narrative with the reproduction |
 | [Release notes](#release-notes) | upgrading between versions | one announcement per tag, bilingual |
+| [Release & maintenance policy](../RELEASING.md) | what earns a version and what merges on its own | one live rule, enforced by CI |
 | [Source map](#source-map) | finding the code behind a concept | module table |
 
 ## Case studies
