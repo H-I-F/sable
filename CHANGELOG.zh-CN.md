@@ -9,6 +9,30 @@ API，这一点在这里写明，而不是让开发者在恢复数据时才撞�
 
 ## [未发布]
 
+## [0.1.4] - 2026-11-11
+
+一次维护发版。引擎没动：WAL 帧、SSTable 布局、读写路径、快照、CLI 和公开 API 都与 0.1.3
+一模一样，0.1.3 写出来的数据库照常打开。这一版记下的是仓库打理自己的方式变了，以及往后发版的
+规矩：从现在起，不碰引擎的改动自动合并，不再单独打 tag。
+
+### 新增
+
+- **依赖更新自动合并。** 一个 `workflow_run` workflow 会在 Dependabot 的 PR 转绿之后给它挂上
+  `auto-merge`。真正拍板的还是分支保护——必需检查、线性历史、所有对话已解决，都得过了才落地，
+  所以 CI 挂了绝不会进 `main`。它在默认分支上跑，不需要额外 token 或第三方 action，也只碰
+  Dependabot 开的 PR。
+
+### 变更
+
+- **Dependabot 改成每月扫、分组提。** pip、GitHub Actions、Docker 三个生态从每周挪到每月，
+  各自并成一个 PR。既然更新会自己合并，每周跑一次只是多产几个要关掉的 PR。
+- **自动化安全修复打开了。** 常规更新慢下来，不代表报出来的漏洞也慢，它照样会有自己那条修复 PR。
+- **贡献指南不再写死工具版本。** `CONTRIBUTING.md` 与 `CONTRIBUTING.zh-CN.md` 的环境自检现在
+  只说装到的版本应与 `.[dev]` 一致，不再打印固定的 `ruff`、`mypy` 数字。bot 合入的 linter 升级
+  不会再让指南留在旧号上。
+- `pyproject.toml` 与 `sable.__version__` 的版本从 `0.1.3` 提到 `0.1.4`，让包报告的版本号与
+  打 tag 的那次构建一致。
+
 ## [0.1.3] - 2026-11-10
 
 一次维护发版。引擎没动：WAL 帧、SSTable 布局、读写路径、快照、CLI 和公开 API 都与 0.1.2
@@ -154,7 +178,8 @@ API，这一点在这里写明，而不是让开发者在恢复数据时才撞�
   「段没了」。现在两者都以退出码 2 在 stderr 给一行原因，SSTable CLI 也把外来或损坏文件走同一条
   路径。库函数不变——`inspect_wal` 对缺失文件仍返回 `[]`，这是段遍历需要的语义。
 
-[未发布]: https://github.com/H-I-F/sable/compare/v0.1.3...HEAD
+[未发布]: https://github.com/H-I-F/sable/compare/v0.1.4...HEAD
+[0.1.4]: https://github.com/H-I-F/sable/releases/tag/v0.1.4
 [0.1.3]: https://github.com/H-I-F/sable/releases/tag/v0.1.3
 [0.1.2]: https://github.com/H-I-F/sable/releases/tag/v0.1.2
 [0.1.1]: https://github.com/H-I-F/sable/releases/tag/v0.1.1

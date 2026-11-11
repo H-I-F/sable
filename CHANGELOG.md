@@ -9,6 +9,41 @@ Format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-11-11
+
+A maintenance release. The engine is untouched: the WAL frame, SSTable layout,
+read and write paths, snapshots, the CLI and the public API are exactly as they
+were in 0.1.3, and a database written by 0.1.3 opens unchanged. What this
+version records is a change to how the repository is maintained, and the rule
+for future releases: from now on, work that does not touch the engine merges
+automatically and no longer gets a tag of its own.
+
+### Added
+
+- **Auto-merge for dependency updates.** A `workflow_run` workflow arms
+  `auto-merge` on a Dependabot pull request once CI is green. Branch protection
+  still has the final say — required checks, a linear history and resolved
+  conversations all have to pass before the merge lands — so a failing build
+  never reaches `main`. It runs on the default branch, needs no extra token or
+  third-party action, and only touches pull requests opened by Dependabot.
+
+### Changed
+
+- **Dependabot scans monthly, in groups.** The pip, GitHub Actions and Docker
+  ecosystems moved off the weekly schedule and each group into a single pull
+  request. With updates merging themselves, a weekly cadence only produced more
+  pull requests to close.
+- **Automated security fixes are enabled.** Slowing routine updates down does
+  not slow down a reported vulnerability, which still gets its own fix pull
+  request.
+- **The contributor guides no longer print pinned tool versions.** The
+  environment check in `CONTRIBUTING.md` and `CONTRIBUTING.zh-CN.md` now says the
+  installed version should match `.[dev]`, instead of naming a fixed `ruff` or
+  `mypy` number. A linter bump merged by the bot can no longer leave the guide
+  stale.
+- Version `0.1.3` → `0.1.4` in `pyproject.toml` and `sable.__version__`, so the
+  package reports the tag it was built from.
+
 ## [0.1.3] - 2026-11-10
 
 A maintenance release. The engine is untouched: the WAL frame, SSTable layout,
@@ -210,7 +245,8 @@ decision stated as a filesystem invariant.
   functions are unchanged — `inspect_wal` still returns `[]` for a missing file,
   which is what segment iteration needs.
 
-[Unreleased]: https://github.com/H-I-F/sable/compare/v0.1.3...HEAD
+[Unreleased]: https://github.com/H-I-F/sable/compare/v0.1.4...HEAD
+[0.1.4]: https://github.com/H-I-F/sable/releases/tag/v0.1.4
 [0.1.3]: https://github.com/H-I-F/sable/releases/tag/v0.1.3
 [0.1.2]: https://github.com/H-I-F/sable/releases/tag/v0.1.2
 [0.1.1]: https://github.com/H-I-F/sable/releases/tag/v0.1.1
