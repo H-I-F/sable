@@ -1,5 +1,10 @@
 version: 2
 
+# Version updates run once a month. Each ecosystem is folded into a single
+# pull request, and dependabot-auto-merge.yml arms auto-merge on a green CI
+# run, so routine pins no longer need a maintainer click. Security updates are
+# enabled in the repository settings and arrive as soon as an advisory is
+# published; they are not held to this monthly schedule.
 updates:
   # Runtime + dev deps live in pyproject.toml (PEP 621 + optional-dependencies).
   # sable itself ships zero runtime dependencies, so this mostly tracks the
@@ -7,8 +12,7 @@ updates:
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: "monthly"
       time: "04:00"
       timezone: "Asia/Shanghai"
     open-pull-requests-limit: 5
@@ -17,8 +21,8 @@ updates:
       prefix: "chore(deps)"
       prefix-development: "chore(deps-dev)"
     groups:
-      python-dev-toolchain:
-        dependency-type: "development"
+      python-dependencies:
+        patterns: ["*"]
 
   # Only actions/checkout and actions/setup-python are pinned by tag today.
   # Note: these floating tags must be replaced with full commit SHAs before the
@@ -26,18 +30,24 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
       timezone: "Asia/Shanghai"
     labels: ["dependencies", "ci"]
     commit-message:
       prefix: "ci(actions)"
+    groups:
+      ci-actions:
+        patterns: ["*"]
 
   # Tracks the base image in Dockerfile (python:3.11-slim).
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
       timezone: "Asia/Shanghai"
     labels: ["dependencies", "docker"]
     commit-message:
       prefix: "chore(docker)"
+    groups:
+      docker-images:
+        patterns: ["*"]
