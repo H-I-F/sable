@@ -1,0 +1,99 @@
+# Merge Dependabot pull requests once CI is green, without a maintainer click.
+#
+# Why workflow_run: a workflow triggered directly by a Dependabot PR receives a
+# fork-grade, read-only GITHUB_TOKEN, which cannot arm auto-merge. Watching the
+# completed CI run instead runs on the default branch with the write permissions
+# declared below -- the same pattern pr-report.yml already uses in this repo.
+#
+# This only arms auto-merge. GitHub performs the merge later, after every
+# required status check and branch protection rule is satisfied, so a red check
+# never reaches main. No third-party action, no PAT, no extra secret.
+#
+# Triggers:
+#   workflow_run (CI)  -> arm auto-merge on the Dependabot PR behind that run
+#   workflow_dispatch  -> retry by hand for one PR number
+name: Dependabot auto-merge
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: "PR number to arm auto-merge for"
+        required: true
+        type: number
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: >-
+    dep-automerge-${{ github.repository }}-${{
+    github.event.workflow_run.id || inputs.pr || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  automerge:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'pull_request')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Resolve the PR behind this run
+        id: resolve
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          DISPATCH_PR: ${{ inputs.pr }}
+          RUN_PR: ${{ github.event.workflow_run.pull_requests[0].number }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          pr=""
+          if [ -n "${DISPATCH_PR:-}" ]; then
+            pr="$DISPATCH_PR"
+          elif [ -n "${RUN_PR:-}" ]; then
+            pr="$RUN_PR"
+          elif [ -n "${HEAD_SHA:-}" ]; then
+            pr=$(gh api "repos/$GH_REPO/commits/$HEAD_SHA/pulls" \
+                   --jq '[.[] | select(.state == "open")][0].number // empty')
+          fi
+          if [ -z "$pr" ]; then
+            echo "::notice::no open PR tied to this run; nothing to arm"
+            echo "pr=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "pr=$pr" >> "$GITHUB_OUTPUT"
+
+      - name: Arm auto-merge if this is a ready Dependabot PR
+        if: steps.resolve.outputs.pr != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          PR: ${{ steps.resolve.outputs.pr }}
+        run: |
+          set -euo pipefail
+          json=$(gh api "repos/$GH_REPO/pulls/$PR")
+          author=$(echo "$json" | jq -r '.user.login')
+          state=$(echo "$json" | jq -r '.state')
+          draft=$(echo "$json" | jq -r '.draft')
+          base=$(echo "$json" | jq -r '.base.ref')
+          if [ "$author" != "dependabot[bot]" ]; then
+            echo "::notice::#$PR is not from Dependabot ($author); skipping"
+            exit 0
+          fi
+          if [ "$state" != "open" ] || [ "$draft" = "true" ] || [ "$base" != "main" ]; then
+            echo "::notice::#$PR is not an open, ready PR against main; skipping"
+            exit 0
+          fi
+          if [ "$(echo "$json" | jq -r '.auto_merge != null')" = "true" ]; then
+            echo "::notice::#$PR already has auto-merge armed"
+            exit 0
+          fi
+          gh pr merge "$PR" --auto --squash --repo "$GH_REPO"
+          echo "auto-merge armed for #$PR"
